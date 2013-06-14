@@ -2,7 +2,7 @@ name := "activator-akka-spray"
 
 version := "1.0"
 
-scalaVersion := "2.10.1"
+scalaVersion := "2.10.2"
 
 resolvers += "spray repo" at "http://repo.spray.io"
 
@@ -12,6 +12,7 @@ libraryDependencies ++= Seq(
   "ch.qos.logback"      % "logback-classic"  % "1.0.13",
   "io.spray"            % "spray-can"        % "1.2-M8",
   "io.spray"            % "spray-routing"    % "1.2-M8",
+  "io.spray"           %% "spray-json"       % "1.2.3",
   "io.spray"            % "spray-testkit"    % "1.2-M8" % "test",
   "org.scalatest"      %% "scalatest"        % "1.9.1"  % "test",
   "junit"               % "junit"            % "4.11"   % "test",

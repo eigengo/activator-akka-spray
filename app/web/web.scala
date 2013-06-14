@@ -1,6 +1,6 @@
 package web
 
-import core.Core
+import core.{CoreActors, Core}
 import api.Api
 
 /**
@@ -15,6 +15,6 @@ import api.Api
  * configuration, especially when it comes to the threading model.
  */
 trait Web {
-  this: Api with Core =>
+  this: Api with CoreActors =>
 
 }

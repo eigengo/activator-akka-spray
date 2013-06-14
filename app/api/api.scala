@@ -1,6 +1,6 @@
 package api
 
-import core.Core
+import core.{CoreActors, Core}
 
 /**
  * The REST API layer. It exposes the REST services, but does not provide any
@@ -8,6 +8,6 @@ import core.Core
  * Notice that it requires to be mixed in with ``core.Core``.
  */
 trait Api {
-  this: Core =>
+  this: CoreActors =>
 
 }
