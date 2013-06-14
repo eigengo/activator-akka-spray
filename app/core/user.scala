@@ -1,7 +1,6 @@
 package core
 
 import java.util.UUID
-import spray.json.DefaultJsonProtocol
 
 /**
  * A "typical" user value containing its identity, name and email. Notice
