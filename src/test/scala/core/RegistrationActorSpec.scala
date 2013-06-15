@@ -12,7 +12,8 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with ImplicitSender w
 
   sequential
 
-  "registering a user" should {
+  "Registration should" >> {
+
     "reject invalid email" in {
       registration ! Register(mkUser(""))
       expectMsgType[NotRegistered.type]
