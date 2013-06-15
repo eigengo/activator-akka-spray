@@ -9,6 +9,6 @@ import core.{CoreActors, Core}
  * to the top-level actors that make up the system.
  */
 trait Api {
-  this: CoreActors =>
+  this: CoreActors with Core =>
 
 }

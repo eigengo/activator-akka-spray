@@ -10,6 +10,9 @@ package object core {
    */
   type EmailAddress = String
 
+  /**
+   * Core is a structural type containing the ``system: ActorSystem`` member.
+   */
   type Core = { def system: ActorSystem }
 
 }

@@ -13,9 +13,8 @@ libraryDependencies ++= Seq(
   "io.spray"            % "spray-can"        % "1.2-M8",
   "io.spray"            % "spray-routing"    % "1.2-M8",
   "io.spray"           %% "spray-json"       % "1.2.3",
+  "org.specs2"         %% "specs2"           % "1.14"      % "test",
   "io.spray"            % "spray-testkit"    % "1.2-M8"    % "test",
-  "org.scalatest"      %% "scalatest"        % "1.9.1"     % "test",
-  "junit"               % "junit"            % "4.11"      % "test",
   "com.typesafe.akka"  %% "akka-testkit"     % "2.2.0-RC1" % "test",
   "com.novocode"        % "junit-interface"  % "0.7"       % "test->default"
 )
