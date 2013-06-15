@@ -22,12 +22,12 @@ libraryDependencies ++= Seq(
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-v")
 
 // Note: These settings are defaults for Activator but can be changed.
-Seq(
-  scalaSource in Compile <<= baseDirectory / "app",
-  javaSource in Compile <<= baseDirectory / "app",
-  sourceDirectory in Compile <<= baseDirectory / "app",
-  scalaSource in Test <<= baseDirectory / "test",
-  javaSource in Test <<= baseDirectory / "test",
-  sourceDirectory in Test <<= baseDirectory / "test",
-  resourceDirectory in Compile <<= baseDirectory / "conf"
-)
+//Seq(
+//  scalaSource in Compile <<= baseDirectory / "app",
+//  javaSource in Compile <<= baseDirectory / "app",
+//  sourceDirectory in Compile <<= baseDirectory / "app",
+//  scalaSource in Test <<= baseDirectory / "test",
+//  javaSource in Test <<= baseDirectory / "test",
+//  sourceDirectory in Test <<= baseDirectory / "test",
+//  resourceDirectory in Compile <<= baseDirectory / "conf"
+//)
