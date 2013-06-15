@@ -10,14 +10,21 @@ import spray.httpx.marshalling.Marshaller
 import spray.http.HttpHeaders.RawHeader
 import akka.actor.Actor
 
+/**
+ * Holds potential error response with the HTTP status and optional body
+ *
+ * @param responseStatus the status code
+ * @param response the optional body
+ */
 case class ErrorResponseException(responseStatus: StatusCode, response: Option[HttpEntity]) extends Exception
 
-/** Provides a hook to catch exceptions and rejections from routes, allowing custom
-  * responses to be provided, logs to be captured, and potentially remedial actions.
-  *
-  * Note that this is not marshalled, but it is possible to do so allowing for a fully
-  * JSON API (e.g. see how Foursquare do it).
-  */
+/**
+ * Provides a hook to catch exceptions and rejections from routes, allowing custom
+ * responses to be provided, logs to be captured, and potentially remedial actions.
+ *
+ * Note that this is not marshalled, but it is possible to do so allowing for a fully
+ * JSON API (e.g. see how Foursquare do it).
+ */
 trait FailureHandling {
   this: HttpService =>
 
@@ -46,8 +53,7 @@ trait FailureHandling {
                                     thrown: Throwable,
                                     message: String = "The server is having problems.",
                                     error: StatusCode = InternalServerError)
-                                   (implicit log: LoggingContext)
-  {
+                                   (implicit log: LoggingContext): Unit = {
     log.error(thrown, ctx.request.toString)
     ctx.complete(error, message)
   }
@@ -91,7 +97,7 @@ trait CrossLocationRouteDirectives extends RouteDirectives {
 
   private class CompletionRoute[T : Marshaller](status: StatusCode, headers: List[HttpHeader], obj: T)
     extends StandardRoute {
-    def apply(ctx: RequestContext) {
+    def apply(ctx: RequestContext): Unit = {
       ctx.complete(status, headers, obj)
     }
   }
