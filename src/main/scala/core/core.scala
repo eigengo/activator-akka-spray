@@ -3,16 +3,10 @@ package core
 import akka.actor.{Props, ActorSystem}
 
 /**
- * This trait contains the main components of the application we are building.
+ * This trait implements ``Core`` by starting the required ``ActorSystem`` and registering the
+ * termination handler to stop the system when the JVM exits.
  */
-trait Core {
-  def system: ActorSystem
-}
-
-/**
- * This trait implements ``Core`` by starting the required ``ActorSystem``
- */
-trait BootedCore extends Core {
+trait BootedCore {
 
   /**
    * Construct the ActorSystem we will use in our application
@@ -27,7 +21,8 @@ trait BootedCore extends Core {
 }
 
 /**
- * This trait contains the actors that make up our application
+ * This trait contains the actors that make up our application; it can be mixed in with
+ * ``BootedCore`` for running code or ``TestKit`` for unit and integration tests.
  */
 trait CoreActors {
   this: Core =>

@@ -4,7 +4,9 @@ import spray.json.{JsonFormat, JsValue, JsString, DefaultJsonProtocol, deseriali
 import java.util.UUID
 
 /**
- * Contains useful JSON formats: ``j.u.Date``, ``j.u.UUID`` and others
+ * Contains useful JSON formats: ``j.u.Date``, ``j.u.UUID`` and others; it is useful
+ * when creating traits that contain the ``JsonReader`` and ``JsonWriter`` instances
+ * for types that contain ``Date``s, ``UUID``s and such like.
  */
 trait DefaultJsonFormats extends DefaultJsonProtocol {
 

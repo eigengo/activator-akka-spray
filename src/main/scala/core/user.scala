@@ -14,7 +14,8 @@ import java.util.UUID
 case class User(id: UUID, firstName: String, lastName: String, email: EmailAddress)
 
 /**
- * The JSON formats for the users. Follow the ``json-pickler`` template to.
+ * The JSON formats for the users. Follow the ``json-pickler`` template to avoid having
+ * to do as much typing.
  */
 trait UserFormats extends DefaultJsonFormats {
   implicit val userFormat = jsonFormat4(User)
