@@ -28,5 +28,6 @@ trait CoreActors {
   this: Core =>
 
   val registration = system.actorOf(Props[RegistrationActor])
+  val messenger    = system.actorOf(Props[MessengerActor])
 
 }

@@ -8,7 +8,7 @@ import java.util.UUID
 class RegistrationActorSpec extends TestKit(ActorSystem()) with ImplicitSender with SpecificationLike with CoreActors {
   import RegistrationActor._
 
-  private def mkUser(email: EmailAddress): User = User(UUID.randomUUID(), "A", "B", email)
+  private def mkUser(email: Email): User = User(UUID.randomUUID(), "A", "B", email)
 
   sequential
 

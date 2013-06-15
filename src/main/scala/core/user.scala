@@ -11,7 +11,7 @@ import java.util.UUID
  * @param lastName the last name
  * @param email the email address
  */
-case class User(id: UUID, firstName: String, lastName: String, email: EmailAddress)
+case class User(id: UUID, firstName: String, lastName: String, email: Email)
 
 /**
  * The JSON formats for the users. Follow the ``json-pickler`` template to avoid having

@@ -6,9 +6,19 @@ import akka.actor.ActorSystem
 package object core {
 
   /**
-   * EmailAddress is a plain old String.
+   * Email is a plain old String.
    */
-  type EmailAddress = String
+  type Email = String
+
+  /**
+   * Mobile number is a tuple: country code and local number
+   */
+  type Mobile = (String, String)
+
+  /**
+   * MessageBody is also just plain old String.
+   */
+  type MessageBody = String
 
   /**
    * Core is a structural type containing the ``system: ActorSystem`` member.
