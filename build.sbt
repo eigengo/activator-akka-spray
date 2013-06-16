@@ -19,6 +19,16 @@ libraryDependencies ++= Seq(
   "com.novocode"        % "junit-interface"  % "0.7"       % "test->default"
 )
 
+scalacOptions ++= Seq(
+  "-unchecked",
+  "-deprecation",
+  "-Xlint",
+  "-Ywarn-dead-code",
+  "-language:_",
+  "-target:jvm-1.7",
+  "-encoding", "UTF-8"
+)
+
 testOptions += Tests.Argument(TestFrameworks.JUnit, "-v")
 
 // Note: These settings are defaults for Activator but can be changed.

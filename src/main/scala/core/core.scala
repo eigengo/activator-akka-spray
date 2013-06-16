@@ -16,7 +16,7 @@ trait BootedCore {
   /**
    * Ensure that the constructed ActorSystem is shut down when the JVM shuts down
    */
-  system.registerOnTermination(system.shutdown())
+  sys.addShutdownHook(system.shutdown())
 
 }
 
