@@ -77,9 +77,9 @@ class RoutedHttpService(route: Route) extends Actor with HttpService {
     }
 
 
-  def receive = {
+  def receive: Receive =
     runRoute(route)(handler, RejectionHandler.Default, context, RoutingSettings.default, LoggingContext.fromActorRefFactory)
-  }
+
 
 }
 
