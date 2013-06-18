@@ -5,7 +5,7 @@ import akka.actor.ActorSystem
 import org.specs2.mutable.SpecificationLike
 import java.util.UUID
 
-class RegistrationActorSpec extends TestKit(ActorSystem()) with ImplicitSender with SpecificationLike with CoreActors {
+class RegistrationActorSpec extends TestKit(ActorSystem()) with ImplicitSender with SpecificationLike with CoreActors with Core {
   import RegistrationActor._
 
   private def mkUser(email: Email): User = User(UUID.randomUUID(), "A", "B", email)
