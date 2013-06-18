@@ -20,9 +20,4 @@ package object core {
    */
   type MessageBody = String
 
-  /**
-   * Core is a structural type containing the ``system: ActorSystem`` member.
-   */
-  type Core = { def system: ActorSystem }
-
 }
