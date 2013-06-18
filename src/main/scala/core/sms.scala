@@ -9,7 +9,7 @@ object SMSActor {
 class SMSActor extends Actor {
   import SMSActor._
 
-  def receive: Actor.Receive = {
+  def receive: Receive = {
     case SendSMS((countryCode, number), body) =>
   }
 }

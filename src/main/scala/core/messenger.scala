@@ -17,7 +17,7 @@ class MessengerActor extends Actor {
   val email = context.actorOf(Props[EmailActor])
   val sms   = context.actorOf(Props[SMSActor])
 
-  def receive: Actor.Receive = {
+  def receive: Receive = {
     case SendMessage(to, message) if to.getLeastSignificantBits % 2 == 0 =>
       email ! SendEmail("foo@bar.com", message)
     case SendMessage(to, message) if to.getLeastSignificantBits % 2 != 0 =>

@@ -9,7 +9,7 @@ object EmailActor {
 
 class EmailActor extends Actor {
 
-  def receive: Actor.Receive = {
+  def receive: Receive = {
     case SendEmail(to, body) =>
   }
 }
