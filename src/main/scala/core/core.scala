@@ -3,7 +3,8 @@ package core
 import akka.actor.{Props, ActorSystem}
 
 /**
- * Core is a structural type containing the ``system: ActorSystem`` member.
+ * Core is type containing the ``system: ActorSystem`` member. This enables us to use it in our
+ * apps as well as in our tests.
  */
 trait Core {
 
