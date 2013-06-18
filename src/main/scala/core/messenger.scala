@@ -5,7 +5,7 @@ import java.util.UUID
 
 object MessengerActor {
 
-  case class SendMessage(to: UUID, message: MessageBody)
+  case class SendMessage(to: UUID, message: String)
 
 }
 
@@ -21,6 +21,6 @@ class MessengerActor extends Actor {
     case SendMessage(to, message) if to.getLeastSignificantBits % 2 == 0 =>
       email ! SendEmail("foo@bar.com", message)
     case SendMessage(to, message) if to.getLeastSignificantBits % 2 != 0 =>
-      sms ! SendSMS("44" -> "7771234567", message)
+      sms ! SendSMS("+447771234567", message)
   }
 }

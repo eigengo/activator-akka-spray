@@ -4,7 +4,7 @@ import akka.actor.Actor
 import core.EmailActor.SendEmail
 
 object EmailActor {
-  case class SendEmail(to: Email, message: MessageBody)
+  case class SendEmail(to: String, message: String)
 }
 
 class EmailActor extends Actor {
