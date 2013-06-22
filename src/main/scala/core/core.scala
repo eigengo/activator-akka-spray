@@ -21,7 +21,7 @@ trait BootedCore extends Core {
   /**
    * Construct the ActorSystem we will use in our application
    */
-  implicit val system = ActorSystem("akka-spray")
+  implicit lazy val system = ActorSystem("akka-spray")
 
   /**
    * Ensure that the constructed ActorSystem is shut down when the JVM shuts down
