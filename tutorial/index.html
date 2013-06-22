@@ -213,8 +213,8 @@ class RegistrationActor extends Actor{
 import RegistrationActor._
 
   def receive: Receive = {
-    case Register(user) if user.email.isEmpty => sender ! NotRegistered
-    case Register(user)                       => sender ! Registered
+    case Register(user) if user.email.isEmpty => sender ! Left(NotRegistered)
+    case Register(user)                       => sender ! Right(Registered)
   }
 
 }
@@ -246,13 +246,13 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
 
     "reject invalid email" in {
       registration ! Register(mkUser(""))
-      expectMsgType[NotRegistered.type]
+      expectMsg(Left(NotRegistered))
       success
     }
 
     "accept valid user to be registered" in {
       registration ! Register(mkUser("jan@eigengo.com"))
-      expectMsgType[Registered.type]
+      expectMsg(Right(Registered))
       success
     }
   }
@@ -365,8 +365,7 @@ trait Api extends RouteConcatenation {
 
   val routes =
     new RegistrationService(registration).route ~
-    new SMSService(messenger).route ~
-    new EmailService(messenger).route
+    new MessengerService(messenger).route
 
   val rootService = system.actorOf(Props(new RoutedHttpService(routes)))
 
@@ -380,6 +379,22 @@ trait Api extends RouteConcatenation {
 <div>
     <h2>Registration Service</h2>
 
+    <p>
+        I will show the code and structure of the <code>RegistrationService</code>, which is ever so
+        slightly more complex than the code in <code>MessengerService</code>. The motivation for the
+        <code>RegistrationService</code> is to have REST API that receives JSON payloads in that can
+        be mapped to instances of the <code>Register</code> case class.
+<pre><code>
+{ "user": {
+    "id": "122fa630-92fd-11e2-9e96-0800200c9a66",
+    "firstName":"Jan",
+    "lastName":"Machacek",
+    "email":"jan@eigengo.com" } }
+</code></pre>
+        I expect replies to match the responses (<code>Either[NotRegistered, Registered]</code>);
+        the value on the left projection should result in HTTP status <em>bad request</em>; the
+        value on the right projection should be HTTP OK.
+    </p>
     <p>
 
     </p>

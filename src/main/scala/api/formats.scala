@@ -14,13 +14,19 @@ import spray.httpx.SprayJsonSupport
  */
 trait DefaultJsonFormats extends DefaultJsonProtocol with SprayJsonSupport with MetaMarshallers {
 
+  /**
+   * Computes ``RootJsonFormat`` for type ``A`` if ``A`` is object
+   */
   def jsonObjectFormat[A : ClassTag]: RootJsonFormat[A] = new RootJsonFormat[A] {
     val ct = implicitly[ClassTag[A]]
     def write(obj: A): JsValue = JsString(ct.runtimeClass.getName)
     def read(json: JsValue): A = ct.runtimeClass.newInstance().asInstanceOf[A]
   }
 
-  implicit object UuidJsonFormat extends JsonFormat[UUID] {
+  /**
+   * Instance of the ``RootJsonFormat`` for the ``j.u.UUID``
+   */
+  implicit object UuidJsonFormat extends RootJsonFormat[UUID] {
     def write(x: UUID) = JsString(x.toString)
     def read(value: JsValue) = value match {
       case JsString(x) => UUID.fromString(x)
@@ -28,10 +34,25 @@ trait DefaultJsonFormats extends DefaultJsonProtocol with SprayJsonSupport with 
     }
   }
 
-  // function that converts ``A`` to some ``StatusCode``
+  /**
+   * Type alias for function that converts ``A`` to some ``StatusCode``
+   * @tparam A the type of the input values
+   */
   type ErrorSelector[A] = A => StatusCode
 
-  implicit def errorSelectingEitherMarshaller[A, B](implicit ma: Marshaller[A], mb: Marshaller[B], esa: ErrorSelector[A]) =
+  /**
+   * Marshals instances of ``Either[A, B]`` into appropriate HTTP responses by marshalling the values
+   * in the left or right projections; and by selecting the appropriate HTTP status code for the
+   * values in the left projection.
+   *
+   * @param ma marshaller for the left projection
+   * @param mb marshaller for the right projection
+   * @param esa the selector converting the left projection to HTTP status code
+   * @tparam A the left projection
+   * @tparam B the right projection
+   * @return marshaller
+   */
+  implicit def errorSelectingEitherMarshaller[A, B](implicit ma: Marshaller[A], mb: Marshaller[B], esa: ErrorSelector[A]): Marshaller[Either[A, B]] =
     Marshaller[Either[A, B]] { (value, ctx) =>
       value match {
         case Left(a) =>

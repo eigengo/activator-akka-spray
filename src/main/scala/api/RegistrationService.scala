@@ -19,8 +19,8 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
   implicit val registerFormat = jsonFormat1(Register)
   implicit val registeredFormat = jsonObjectFormat[Registered.type]
   implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
-  implicit object EitherErrorSelector extends ErrorSelector[Either[_, _]] {
-    def apply(v: Either[_, _]): StatusCode = if (v.isLeft) StatusCodes.BadRequest else StatusCodes.OK
+  implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
+    def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
   }
 
   val route =
