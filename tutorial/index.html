@@ -226,14 +226,14 @@ import RegistrationActor._
     <h2>Testing the <code>RegistrationActor</code></h2>
 
     <p>
-        As simple as the <code>RegistrationActor</code> is, we can (and <em>should</em>) still test it.
-        We can either test the actor in isolation, writing a <em>unit test</em>, or we can test our
+        As simple as the <code>RegistrationActor</code> is, I can (and <em>should</em>) still test it.
+        I can either test the actor in isolation, writing a <em>unit test</em>, or I can test our
         entire application, but focusing on the <code>RegistrationActor</code>--an <em>integration test</em>.<br/>
         I will show the integration test approach here.
     </p>
 
     <p>
-        To allow us to examine what happens in our actors, we need to use special--<em>crippled</em>--
+        To allow us to examine what happens in our actors, I need to use special--<em>crippled</em>--
         <code>ActorSystem</code> that processes the messages synchronously. To the code, then. We
         extend the <code>TestKit</code> class and mix in the required traits to construct the test.
 <pre><code>
@@ -300,7 +300,7 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
 <div>
     <h2>Spray</h2>
     <p>
-        We are going to use most of the Spray components, namely
+        I are going to use most of the Spray components, namely
         <ul>
             <li><code>spray-io</code> for the low-level, asynchronous I/O,</li>
             <li><code>spray-http</code> for the HTTP protocol implementation on top of <code>spray-io</code>,</li>
@@ -407,12 +407,12 @@ trait Api extends RouteConcatenation {
     </p>
 
     <p>
-        Before we begin to worry about the marshalling and unmarshalling, let's deal with the actual
+        Before I begin to worry about the marshalling and unmarshalling, let's deal with the actual
         HTTP requests. <em>Spray-can</em> deals with the low-level I/O of asynchronous HTTP (and SPDY!) server;
         it then turns the HTTP requests and responses into <code>HttpRequest</code> messages;
         the response sent to the sender is the <code>HttpResponse</code>, containing the response entity,
         headers, etc.<br/>
-        <em>Spray-http</em> deals with convenient routing so that we don't have to implement actors that
+        <em>Spray-http</em> deals with convenient routing so that I don't have to implement actors that
         receive <code>HttpRequest</code>s and reply to the sender with the raw <code>HttpResponse</code>s;
         <em>spray-httpx</em> adds the marshalling and unmarshalling support.<br/>
     </p>
@@ -437,16 +437,16 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
 
 }
 </code></pre>
-        This is a good start. It clearly demonstrates the ease of Spray's routing. We say that on <em>path</em>
-        <code>register</code>, on HTTP method <em>POST</em>, we <em>complete</em> the request with body <code>"OK</code>.
-        Unfortunately, the string <code>"OK"</code> doesn't quite meet our requirement. To do so, we need to interpret
+        This is a good start. It clearly demonstrates the ease of Spray's routing. I say that on <em>path</em>
+        <code>register</code>, on HTTP method <em>POST</em>, I <em>complete</em> the request with body <code>"OK</code>.
+        Unfortunately, the string <code>"OK"</code> doesn't quite meet our requirement. To do so, I need to interpret
         the request as instance of <code>Register</code> and turn our <code>Either[NotRegistered.type, Registered.type]</code>
         into the response.
     </p>
 
     <p>
-        All of this requires some marshalling jiggery pokery. Firstly, we need to be able to turn
-        the HTTP requests into instances of our types and then we need to be able to do the reverse.
+        All of this requires some marshalling jiggery pokery. Firstly, I need to be able to turn
+        the HTTP requests into instances of our types and then I need to be able to do the reverse.
         Spray provides pluggable marshalling mechanism to do that. The instances of the typeclasses
         <code>Marshaller[A]</code> and <code>Unmarshaller[A]</code> are responsible for performing the
         <em>request entity</em> -&gt; <em>our instance</em> and <em>our instance</em> -&gt; <em>response entity</em>
@@ -490,14 +490,14 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
         Looking at the <code>route</code> definition, the only difference is that I changed
         <code>complete</code> to <code>handleWith</code>; and then wired in the call to our
         <code>RegistrationActor</code>.<br/>
-        Reading the code intuitively, we say that <em>to handle requests to </em>register<em> on
-        HTTP method </em>post<em>, we turn the request into <code>Register</code> and then</em>
+        Reading the code intuitively, I say that <em>to handle requests to </em>register<em> on
+        HTTP method </em>post<em>, I turn the request into <code>Register</code> and then</em>
         handleWith<em> a function that returns a <code>Future[Either[...]]</code>, which we
         turn into a response</em>.
     </p>
 
     <p>
-        Intuition did not fail us. All we have to do is to implement the behaviour of turning the
+        Intuition did not fail us. All I have to do is to implement the behaviour of turning the
         requests into our types and our types into responses. So, instances of typeclasses! Those are
         the mysterious lines
 <pre><code>
@@ -510,13 +510,13 @@ implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
         <code>Register</code>, and so on. <code>RootJsonFormat[A]</code> contains functions that read JSON
         and write JSON; <code>SprayJsonSupport</code> then contains further typeclass instances that implement
         <code>Marshaller[A]</code> given <code>JsonWriter[A]</code>, and <code>Unmarshaller[A]</code> given
-        <code>JsonReader[A]</code>. Moving on, we can create other interesting marshalling typeclasses.
+        <code>JsonReader[A]</code>. Moving on, I can create other interesting marshalling typeclasses.
     </p>
 
     <p>
-        For example, if we know how to marshal some type <code>A</code>, we also know how to marshal
-        <code>Seq[A]</code>, <code>Future[A]</code>; if we know how to marshal some <code>A</code> and
-        <code>B</code>, we can marshal <code>Either[A, B]</code>, and so on. We are now ready to write
+        For example, if I know how to marshal some type <code>A</code>, I also know how to marshal
+        <code>Seq[A]</code>, <code>Future[A]</code>; if I know how to marshal some <code>A</code> and
+        <code>B</code>, I can marshal <code>Either[A, B]</code>, and so on. I are now ready to write
         a marshaller that marshals <code>Either[A, B]</code> and, for the left values, it also indicates
         the corret HTTP status code. Its signature is rather scary
 <pre><code>
@@ -544,8 +544,8 @@ implicit def errorSelectingEitherMarshaller[A, B](implicit ma: Marshaller[A], mb
     </p>
 
     <p>
-        To use, I must give the typeclass instance for <code>NotRegistered.type</code>; I do so by defining a
-        singleton:
+        To use, I must give the typeclass instance for <code>ErrorSelector[A]</code>, where <code>A</code> is <code>NotRegistered.type</code>;
+        I do so by defining a singleton:
 <pre><code>
 implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
   def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
@@ -582,7 +582,7 @@ trait Web {
 <pre><code>
 object Rest extends App with BootedCore with CoreActors with Api with Web
 </code></pre>
-        That's all there is to it. We have created an <code>App</code>, mixed in all required
+        That's all there is to it. I have created an <code>App</code>, mixed in all required
         traits and we're good to go.
     </p>
 </div>
