@@ -8,7 +8,7 @@
 
     <p>
         This application shows how to build Akka application with Spray API. In this tutorial, I 
-        are going to use Spray's <code>spray-can</code>, <code>spray-httpx</code>, 
+        am going to use Spray's <code>spray-can</code>, <code>spray-httpx</code>,
         <code>spray-json</code> artefacts with the <em>Akka</em> artefacts to build an application
         that receives HTTP requests with JSON payloads, unmarshals the JSON into instances of our
         own classes (<code>case class</code>es, to be exact). It then sends these instances to the
@@ -118,7 +118,7 @@ trait BootedCore extends Core {
 
 }
 </code></pre>
-        Notice the <code>lazy</code> keyword--now I are free to mix in the required traits
+        Notice the <code>lazy</code> keyword--now I am free to mix in the required traits
         in any order.
     </p>
 </div>
@@ -132,7 +132,7 @@ trait BootedCore extends Core {
     </p>
 
     <p>
-        The motivation was testing. When I are using Akka's <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a>, we
+        The motivation was testing. When I am using Akka's <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a>, we
         construct a test-only <code>ActorSystem</code>. This testing <code>ActorSystem</code>
         allows us to test the actors as if the messages sent and received were method
         calls. In other words, the <code>ActorSystem</code> in our tests uses the
@@ -300,7 +300,7 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
 <div>
     <h2>Spray</h2>
     <p>
-        I are going to use most of the Spray components, namely
+        I am going to use most of the Spray components, namely
         <ul>
             <li><code>spray-io</code> for the low-level, asynchronous I/O,</li>
             <li><code>spray-http</code> for the HTTP protocol implementation on top of <code>spray-io</code>,</li>
@@ -516,7 +516,7 @@ implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
     <p>
         For example, if I know how to marshal some type <code>A</code>, I also know how to marshal
         <code>Seq[A]</code>, <code>Future[A]</code>; if I know how to marshal some <code>A</code> and
-        <code>B</code>, I can marshal <code>Either[A, B]</code>, and so on. I are now ready to write
+        <code>B</code>, I can marshal <code>Either[A, B]</code>, and so on. I am now ready to write
         a marshaller that marshals <code>Either[A, B]</code> and, for the left values, it also indicates
         the corret HTTP status code. Its signature is rather scary
 <pre><code>
