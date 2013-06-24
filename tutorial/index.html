@@ -25,9 +25,9 @@
     </p>
 
     <p>
-        In this template &amp; tutorial, you will learn how to construct <a href="#">TODO: Akka</a>-based
-        applications; how to test them (using <a href="#">TODO: TestKit</a> and <a href="#">TODO: Specs2</a>;
-        and how to provide RESTful HTTP API using <a href="#">TODO: Spray</a>.
+        In this template &amp; tutorial, you will learn how to construct <a href="http://akka.io" target="_blank">Akka</a>-based
+        applications; how to test them (using <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a> and <a href="http://etorreborre.github.io/specs2/" target="_blank">Specs2</a>;
+        and how to provide RESTful HTTP API using <a href="http://spray.io/" target="_blank">Spray</a>.
     </p>
 </div>
 <div>
@@ -40,7 +40,7 @@
     </p>
     <p>
         The top-level actors <em>live</em> in the <code>CoreActors</code> trait. This trait's
-        <a href="#">TODO: self-type annotation</a> defines that instances that mix in this trait
+        <a href="http://docs.scala-lang.org/glossary/" target="_blank">self-type annotation</a> defines that instances that mix in this trait
         must also mix in some subtype of the <code>Core</code> trait.<br/>
         This is a rather long description of the first two lines of the <code>CoreActors</code> trait.
 <pre><code>
@@ -132,7 +132,7 @@ trait BootedCore extends Core {
     </p>
 
     <p>
-        The motivation was testing. When I are using Akka's <a href="#">TODO: TestKit</a>, we
+        The motivation was testing. When I are using Akka's <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a>, we
         construct a test-only <code>ActorSystem</code>. This testing <code>ActorSystem</code>
         allows us to test the actors as if the messages sent and received were method
         calls. In other words, the <code>ActorSystem</code> in our tests uses the
@@ -151,7 +151,7 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
 }
 </code></pre>
         I extend the <code>TestKit</code> class, which gives us access to all the underlying Akka's test
-        mechanisms; I also mix in <a href="#">TODO: Specs2</a>'s <code>SpecificationLike</code>, which gives
+        mechanisms; I also mix in <a href="http://etorreborre.github.io/specs2/" target="_blank">Specs2</a>'s <code>SpecificationLike</code>, which gives
         us the convenient DSL for writing our test scenarios and assertions. Finally, because I am writing code
         to test <em>my</em> actors, I mix in the <code>CoreActors</code> and <code>Core</code> traits.
         I do not need to do any more work, because the member <code>system: ActorSystem</code> fully implements
@@ -160,7 +160,7 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
     </p>
 
     <p>
-        I could have defined <code>Core</code> to be <a href="#">TODO: structural type</a>, in which case,
+        I could have defined <code>Core</code> to be <a href="http://docs.scala-lang.org/glossary/" target="_blank">structural type</a>, in which case,
         I would not have to worry about implementing <code>Core</code> here. If you want to try it out,
         remove the <code>trait Core { ... }</code> and replace it with
 <pre><code>
@@ -185,7 +185,7 @@ package object core {
 
     <p>
         I begin with the <code>RegistrationActor</code>. Its purpose is to register the users in our
-        system. The actor's <a href="#">TODO: companion object</a> holds all the messages that the
+        system. The actor's <a href="http://docs.scala-lang.org/glossary/" target="_blank">companion object</a> holds all the messages that the
         actor deals with. In code, the structure is
 <pre><code>
 object RegistrationActor {
@@ -393,11 +393,197 @@ trait Api extends RouteConcatenation {
 </code></pre>
         I expect replies to match the responses (<code>Either[NotRegistered, Registered]</code>);
         the value on the left projection should result in HTTP status <em>bad request</em>; the
-        value on the right projection should be HTTP OK.
+        value on the right projection should be HTTP OK. In our application, the value
+        <code>Left(NotRegistered)</code> should be represented as HTTP status <code>400</code>
+        with JSON payload
+<pre><code>
+{ "value": "NotRegistered" }
+</code></pre>
+        The <code>Right(Registered)</code> should be represented as HTTP status <code>200</code>
+        with JSON payload
+<pre><code>
+{ "value": "Registered" }
+</code></pre>
     </p>
 
     <p>
+        Before we begin to worry about the marshalling and unmarshalling, let's deal with the actual
+        HTTP requests. <em>Spray-can</em> deals with the low-level I/O of asynchronous HTTP (and SPDY!) server;
+        it then turns the HTTP requests and responses into <code>HttpRequest</code> messages;
+        the response sent to the sender is the <code>HttpResponse</code>, containing the response entity,
+        headers, etc.<br/>
+        <em>Spray-http</em> deals with convenient routing so that we don't have to implement actors that
+        receive <code>HttpRequest</code>s and reply to the sender with the raw <code>HttpResponse</code>s;
+        <em>spray-httpx</em> adds the marshalling and unmarshalling support.<br/>
+    </p>
+    <p>
+        <img src="spray.png" title="Spray"/>
+    </p>
 
+    <p>
+        Let's start working on the <code>RegistrationService</code>. I will begin by using the routes.
+<pre><code>
+class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
+  extends Directives {
+
+  val route =
+    path("register") {
+      post {
+        complete {
+          "OK"
+        }
+      }
+    }
+
+}
+</code></pre>
+        This is a good start. It clearly demonstrates the ease of Spray's routing. We say that on <em>path</em>
+        <code>register</code>, on HTTP method <em>POST</em>, we <em>complete</em> the request with body <code>"OK</code>.
+        Unfortunately, the string <code>"OK"</code> doesn't quite meet our requirement. To do so, we need to interpret
+        the request as instance of <code>Register</code> and turn our <code>Either[NotRegistered.type, Registered.type]</code>
+        into the response.
+    </p>
+
+    <p>
+        All of this requires some marshalling jiggery pokery. Firstly, we need to be able to turn
+        the HTTP requests into instances of our types and then we need to be able to do the reverse.
+        Spray provides pluggable marshalling mechanism to do that. The instances of the typeclasses
+        <code>Marshaller[A]</code> and <code>Unmarshaller[A]</code> are responsible for performing the
+        <em>request entity</em> -&gt; <em>our instance</em> and <em>our instance</em> -&gt; <em>response entity</em>
+        transformations.<br/>
+        I will not get into a complex discussion of typeclasses; I will just say that typeclass defines
+        behaviour for a certain type and a typeclass instance is the implementation of such behaviour.
+        Spray includes the <code>spray-json</code> library, which, together with the <code>SprayJsonSupport</code>
+        trait allows me to wire in <code>spray-json</code> marshallers and unmarshallers and use them in my
+        Spray code.
+    </p>
+
+    <p>
+        Without further delay, let me show you how it's done in code and then explore the details.
+<pre><code>
+class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
+  extends Directives with DefaultJsonFormats {
+
+  import akka.pattern.ask
+  import scala.concurrent.duration._
+  implicit val timeout = Timeout(2.seconds)
+
+  implicit val userFormat = jsonFormat4(User)
+  implicit val registerFormat = jsonFormat1(Register)
+  implicit val registeredFormat = jsonObjectFormat[Registered.type]
+  implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
+  implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
+    def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
+  }
+
+  val route =
+    path("register") {
+      post {
+        handleWith { ru: Register =>
+          (registration ? ru).mapTo[Either[NotRegistered.type, Registered.type]]
+        }
+      }
+    }
+
+}
+</code></pre>
+        Looking at the <code>route</code> definition, the only difference is that I changed
+        <code>complete</code> to <code>handleWith</code>; and then wired in the call to our
+        <code>RegistrationActor</code>.<br/>
+        Reading the code intuitively, we say that <em>to handle requests to </em>register<em> on
+        HTTP method </em>post<em>, we turn the request into <code>Register</code> and then</em>
+        handleWith<em> a function that returns a <code>Future[Either[...]]</code>, which we
+        turn into a response</em>.
+    </p>
+
+    <p>
+        Intuition did not fail us. All we have to do is to implement the behaviour of turning the
+        requests into our types and our types into responses. So, instances of typeclasses! Those are
+        the mysterious lines
+<pre><code>
+implicit val userFormat = jsonFormat4(User)
+implicit val registerFormat = jsonFormat1(Register)
+implicit val registeredFormat = jsonObjectFormat[Registered.type]
+implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
+</code></pre>
+        You see, their types are <code>RootJsonFormat[A]</code>, where <code>A</code> is <code>User</code>,
+        <code>Register</code>, and so on. <code>RootJsonFormat[A]</code> contains functions that read JSON
+        and write JSON; <code>SprayJsonSupport</code> then contains further typeclass instances that implement
+        <code>Marshaller[A]</code> given <code>JsonWriter[A]</code>, and <code>Unmarshaller[A]</code> given
+        <code>JsonReader[A]</code>. Moving on, we can create other interesting marshalling typeclasses.
+    </p>
+
+    <p>
+        For example, if we know how to marshal some type <code>A</code>, we also know how to marshal
+        <code>Seq[A]</code>, <code>Future[A]</code>; if we know how to marshal some <code>A</code> and
+        <code>B</code>, we can marshal <code>Either[A, B]</code>, and so on. We are now ready to write
+        a marshaller that marshals <code>Either[A, B]</code> and, for the left values, it also indicates
+        the corret HTTP status code. Its signature is rather scary
+<pre><code>
+type ErrorSelector[A] = A => StatusCode
+
+implicit def errorSelectingEitherMarshaller[A, B](implicit ma: Marshaller[A], mb: Marshaller[B], esa: ErrorSelector[A]): Marshaller[Either[A, B]] =
+  Marshaller[Either[A, B]] { (value, ctx) =>
+    value match {
+      case Left(a) =>
+        val mc = new CollectingMarshallingContext()
+        ma(a, mc)
+        ctx.handleError(ErrorResponseException(esa(a), mc.entity))
+      case Right(b) =>
+        mb(b, ctx)
+    }
+  }
+</code></pre>
+        And breathe! Now, I have a function <code>errorSelectingEitherMarshaller[A, B]</code> that returns
+        <code>Marshalle[Either[A, B]]</code>. To be able to do that, it must know how to marshal <code>A</code>
+        and <code>B</code>; and if I want to be able to indicate the status code, I must also be able to turn
+        <code>A</code>s into <code>StatusCode</code>. That's what the three implicit parameters do: I am asking
+        the compiler to implicitly find an instance of <code>Marshaller[A]</code>, <code>Marshaller[B]</code> and
+        <code>ErrorSelector[A]</code>; in other words, instances of the <code>Marshaller</code> and <code>ErrorSelector</code>
+        typeclasses for instances <code>A</code> and <code>B</code>.
+    </p>
+
+    <p>
+        To use, I must give the typeclass instance for <code>NotRegistered.type</code>; I do so by defining a
+        singleton:
+<pre><code>
+implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
+  def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
+}
+</code></pre>
+        So, any <code>NotRegistered</code> value is <code>StatusCodes.BadRequest</code>.
+    </p>
+</div>
+<div>
+    <h2>The web server</h2>
+
+    <p>
+        To complete the picture, I must implement the <code>Web</code> trait, which takes the
+        <code>rootService</code> in the <code>Api</code> trait and hosts it in the <code>spray-can</code>
+        HTTP server. The good news is that the code gets simpler:
+<pre><code>
+trait Web {
+  this: Api with CoreActors with Core =>
+
+  IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8080)
+
+}
+</code></pre>
+        I create the <code>Http</code> extension, pass it to Akka's <code>IO</code> machinery; and finally
+        send it the <code>Http.Bind</code> message to bind the <code>rootService</code> to all interfaces,
+        on port <code>8080</code>.
+    </p>
+</div>
+<div>
+    <h2>The grand finale</h2>
+    <p>
+        I am excited to present the final application that combines all our components in an
+        HTTP server. It is
+<pre><code>
+object Rest extends App with BootedCore with CoreActors with Api with Web
+</code></pre>
+        That's all there is to it. We have created an <code>App</code>, mixed in all required
+        traits and we're good to go.
     </p>
 </div>
 </body>
