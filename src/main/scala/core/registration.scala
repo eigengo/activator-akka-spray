@@ -26,9 +26,9 @@ class RegistrationActor extends Actor{
 
   // notice that we don't actually perform any DB operations.
   // that's for another template
-  def receive = {
-    case Register(user) if user.email.isEmpty => sender ! NotRegistered
-    case Register(user)                       => sender ! Registered
+  def receive: Receive = {
+    case Register(user) if user.email.isEmpty => sender ! Left(NotRegistered)
+    case Register(user)                       => sender ! Right(Registered)
   }
 
 }
