@@ -1,72 +1,156 @@
-<!doctype html>
-<html>
+<!DOCTYPE HTML>
+<!--
+/*
+ * jQuery File Upload Plugin AngularJS Demo 1.5.0
+ * https://github.com/blueimp/jQuery-File-Upload
+ *
+ * Copyright 2013, Sebastian Tschan
+ * https://blueimp.net
+ *
+ * Licensed under the MIT license:
+ * http://www.opensource.org/licenses/MIT
+ */
+-->
+<html lang="en">
 <head>
-    <meta charset="utf8"/>
-    <title>Spray file upload</title>
-    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet" />
-    <style type="text/css">
-        body {
-            font-family: Helvetica, sans-serif;
-            font-size: 12px;
-        }
-
-        h1 {
-            font-size: 20px;
-            font-weight: normal;
-            border-bottom: 1px solid gray;
-            padding-bottom: 5px;
-            margin-bottom: 5px;
-            display: block;
-        }
-    </style>
+    <!-- Force latest IE rendering engine or ChromeFrame if installed -->
+    <!--[if IE]>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <![endif]-->
+    <meta charset="utf-8">
+    <title>jQuery File Upload Demo - AngularJS version</title>
+    <meta name="description" content="File Upload widget with multiple file selection, drag&amp;drop support, progress bars, validation and preview images, audio and video for AngularJS. Supports cross-domain, chunked and resumable file uploads and client-side image resizing. Works with any server-side platform (PHP, Python, Ruby on Rails, Java, Node.js, Go etc.) that supports standard HTML form file uploads.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Bootstrap CSS Toolkit styles -->
+    <link rel="stylesheet" href="http://blueimp.github.io/cdn/css/bootstrap.min.css">
+    <!-- Generic page styles -->
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Bootstrap styles for responsive website layout, supporting different screen sizes -->
+    <link rel="stylesheet" href="http://blueimp.github.io/cdn/css/bootstrap-responsive.min.css">
+    <!-- Bootstrap CSS fixes for IE6 -->
+    <!--[if lt IE 7]>
+    <link rel="stylesheet" href="http://blueimp.github.io/cdn/css/bootstrap-ie6.min.css">
+    <![endif]-->
+    <!-- blueimp Gallery styles -->
+    <link rel="stylesheet" href="http://blueimp.github.io/Gallery/css/blueimp-gallery.min.css">
+    <!-- CSS to style the file input field as button and adjust the Bootstrap progress bars -->
+    <link rel="stylesheet" href="css/jquery.fileupload-ui.css">
+    <!-- CSS adjustments for browsers with JavaScript disabled -->
+    <noscript><link rel="stylesheet" href="css/jquery.fileupload-ui-noscript.css"></noscript>
 </head>
 <body>
-<div class="container" ng-app="ngUploadApp">
-
-    <div ng-controller="mainCtrl">
-        <h1>File upload</h1>
-        Post a file to <code>/app/register/image</code> and display the server response
-        <br/>
-
-        <form action="/app/register/image" method="post" enctype="multipart/form-data" ng-upload>
-            <p>
-                <label for="image">Your picture:</label>
-                <input type="file" name="image" id="image"/>
-            </p>
-
-            <p>
-                <input type="submit" class="btn" value="Submit" upload-submit="uploadComplete(content, completed)"/>
-            </p>
-        </form>
-        <div class="alert alert-info">Server Response: {{response | json}}</div>
-    </div>
+<div class="container">
+    <!-- The file upload form used as target for the file upload widget -->
+    <form id="fileupload" action="http://localhost/register/image" method="POST" enctype="multipart/form-data" data-ng-app="demo" data-ng-controller="DemoFileUploadController" data-file-upload="options" data-ng-class="{'fileupload-processing': processing() || loadingFiles}">
+        <!-- The fileupload-buttonbar contains buttons to add/delete files and start/cancel the upload -->
+        <div class="row fileupload-buttonbar">
+            <div class="span7">
+                <!-- The fileinput-button span is used to style the file input field as button -->
+                <span class="btn btn-success fileinput-button" ng-class="{disabled: disabled}">
+                    <i class="icon-plus icon-white"></i>
+                    <span>Add files...</span>
+                    <input type="file" name="files[]" multiple ng-disabled="disabled">
+                </span>
+                <button type="button" class="btn btn-primary start" data-ng-click="submit()">
+                    <i class="icon-upload icon-white"></i>
+                    <span>Start upload</span>
+                </button>
+                <button type="button" class="btn btn-warning cancel" data-ng-click="cancel()">
+                    <i class="icon-ban-circle icon-white"></i>
+                    <span>Cancel upload</span>
+                </button>
+                <!-- The loading indicator is shown during file processing -->
+                <div class="fileupload-loading"></div>
+            </div>
+            <!-- The global progress information -->
+            <div class="span5 fade" data-ng-class="{in: active()}">
+                <!-- The global progress bar -->
+                <div class="progress progress-success progress-striped active" data-file-upload-progress="progress()"><div class="bar" data-ng-style="{width: num + '%'}"></div></div>
+                <!-- The extended global progress information -->
+                <div class="progress-extended">&nbsp;</div>
+            </div>
+        </div>
+        <!-- The table listing the files available for upload/download -->
+        <table class="table table-striped files ng-cloak">
+            <tr data-ng-repeat="file in queue">
+                <td data-ng-switch data-on="!!file.thumbnailUrl">
+                    <div class="preview" data-ng-switch-when="true">
+                        <a data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery><img data-ng-src="{{file.thumbnailUrl}}" alt=""></a>
+                    </div>
+                    <div class="preview" data-ng-switch-default data-file-upload-preview="file"></div>
+                </td>
+                <td>
+                    <p class="name" data-ng-switch data-on="!!file.url">
+                        <span data-ng-switch-when="true" data-ng-switch data-on="!!file.thumbnailUrl">
+                            <a data-ng-switch-when="true" data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}" data-gallery>{{file.name}}</a>
+                            <a data-ng-switch-default data-ng-href="{{file.url}}" title="{{file.name}}" download="{{file.name}}">{{file.name}}</a>
+                        </span>
+                        <span data-ng-switch-default>{{file.name}}</span>
+                    </p>
+                    <div data-ng-show="file.error"><span class="label label-important">Error</span> {{file.error}}</div>
+                </td>
+                <td>
+                    <p class="size">{{file.size | formatFileSize}}</p>
+                    <div class="progress progress-success progress-striped active fade" data-ng-class="{pending: 'in'}[file.$state()]" data-file-upload-progress="file.$progress()"><div class="bar" data-ng-style="{width: num + '%'}"></div></div>
+                </td>
+                <td>
+                    <button type="button" class="btn btn-primary start" data-ng-click="file.$submit()" data-ng-hide="!file.$submit">
+                        <i class="icon-upload icon-white"></i>
+                        <span>Start</span>
+                    </button>
+                    <button type="button" class="btn btn-warning cancel" data-ng-click="file.$cancel()" data-ng-hide="!file.$cancel">
+                        <i class="icon-ban-circle icon-white"></i>
+                        <span>Cancel</span>
+                    </button>
+                    <button data-ng-controller="FileDestroyController" type="button" class="btn btn-danger destroy" data-ng-click="file.$destroy()" data-ng-hide="!file.$destroy">
+                        <i class="icon-ban-circle icon-white"></i>
+                        <span>Delete</span>
+                    </button>
+                </td>
+            </tr>
+        </table>
+    </form>
 </div>
-
-<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.js" type="text/javascript"></script>
-<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js" type="text/javascript"></script>
-<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
-<script src="ng-upload.js" type="text/javascript"></script>
-<script type="text/javascript">
-    var app = angular.module('ngUploadApp', ['ngUpload']);
-
-    app.controller('mainCtrl', function ($scope) {
-        $scope.uploadComplete = function (content, completed) {
-            if (completed && content) {
-                console.log(content);
-                $scope.response = content; // Presumed content is a json string!
-                $scope.response.style = {
-                    color: $scope.response.color,
-                    "font-weight": "bold"
-                };
-
-                // Clear form (reason for using the 'ng-model' directive on the input elements)
-                $scope.fullname = '';
-                $scope.gender = '';
-                $scope.color = '';
-                // Look for way to clear the input[type=file] element
-            }
-        };
-    });
-</script>
+<!-- The blueimp Gallery widget -->
+<div id="blueimp-gallery" class="blueimp-gallery blueimp-gallery-controls" data-filter=":even">
+    <div class="slides"></div>
+    <h3 class="title"></h3>
+    <a class="prev">‹</a>
+    <a class="next">›</a>
+    <a class="close">×</a>
+    <a class="play-pause"></a>
+    <ol class="indicator"></ol>
+</div>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.1/jquery.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.5/angular.min.js"></script>
+<!-- The jQuery UI widget factory, can be omitted if jQuery UI is already included -->
+<script src="js/vendor/jquery.ui.widget.js"></script>
+<!-- The Load Image plugin is included for the preview images and image resizing functionality -->
+<script src="http://blueimp.github.io/JavaScript-Load-Image/js/load-image.min.js"></script>
+<!-- The Canvas to Blob plugin is included for image resizing functionality -->
+<script src="http://blueimp.github.io/JavaScript-Canvas-to-Blob/js/canvas-to-blob.min.js"></script>
+<!-- Bootstrap JS is not required, but included for the responsive demo navigation -->
+<script src="http://blueimp.github.io/cdn/js/bootstrap.min.js"></script>
+<!-- blueimp Gallery script -->
+<script src="http://blueimp.github.io/Gallery/js/blueimp-gallery.min.js"></script>
+<script src="http://blueimp.github.io/Gallery/js/jquery.blueimp-gallery.min.js"></script>
+<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+<script src="js/jquery.iframe-transport.js"></script>
+<!-- The basic File Upload plugin -->
+<script src="js/jquery.fileupload.js"></script>
+<!-- The File Upload processing plugin -->
+<script src="js/jquery.fileupload-process.js"></script>
+<!-- The File Upload image preview & resize plugin -->
+<script src="js/jquery.fileupload-image.js"></script>
+<!-- The File Upload audio preview plugin -->
+<script src="js/jquery.fileupload-audio.js"></script>
+<!-- The File Upload video preview plugin -->
+<script src="js/jquery.fileupload-video.js"></script>
+<!-- The File Upload validation plugin -->
+<script src="js/jquery.fileupload-validate.js"></script>
+<!-- The File Upload Angular JS module -->
+<script src="js/jquery.fileupload-angular.js"></script>
+<!-- The main application script -->
+<script src="js/app.js"></script>
 </body>
 </html>
