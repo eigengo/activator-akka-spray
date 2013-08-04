@@ -4,11 +4,11 @@ import spray.http.StatusCodes._
 import spray.http._
 import spray.routing._
 import directives.{CompletionMagnet, RouteDirectives}
-import spray.util.LoggingContext
+import spray.util.{SprayActorLogging, LoggingContext}
 import util.control.NonFatal
 import spray.httpx.marshalling.Marshaller
 import spray.http.HttpHeaders.RawHeader
-import akka.actor.Actor
+import akka.actor.{ActorLogging, Actor}
 
 /**
  * Holds potential error response with the HTTP status and optional body
@@ -64,7 +64,7 @@ trait FailureHandling {
  * Allows you to construct Spray ``HttpService`` from a concatenation of routes; and wires in the error handler.
  * @param route the (concatenated) route
  */
-class RoutedHttpService(route: Route) extends Actor with HttpService {
+class RoutedHttpService(route: Route) extends Actor with HttpService with SprayActorLogging {
 
   implicit def actorRefFactory = context
 
@@ -72,9 +72,11 @@ class RoutedHttpService(route: Route) extends Actor with HttpService {
     case NonFatal(ErrorResponseException(statusCode, entity)) => ctx =>
       ctx.complete(statusCode, entity)
 
-    case NonFatal(e) => ctx =>
+    case NonFatal(e) => ctx => {
+      log.error(e, InternalServerError.defaultMessage)
       ctx.complete(InternalServerError)
     }
+  }
 
 
   def receive: Receive =
