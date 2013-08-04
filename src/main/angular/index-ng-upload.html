@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf8"/>
+    <title>Spray file upload</title>
+    <link href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet" />
+    <style type="text/css">
+        body {
+            font-family: Helvetica, sans-serif;
+            font-size: 12px;
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: normal;
+            border-bottom: 1px solid gray;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="container" ng-app="ngUploadApp">
+
+    <div ng-controller="mainCtrl">
+        <h1>File upload</h1>
+        Post a file to <code>/app/register/image</code> and display the server response
+        <br/>
+
+        <form action="/app/register/image" method="post" enctype="multipart/form-data" ng-upload>
+            <p>
+                <label for="image">Your picture:</label>
+                <input type="file" name="image" id="image"/>
+            </p>
+
+            <p>
+                <input type="submit" class="btn" value="Submit" upload-submit="uploadComplete(content, completed)"/>
+            </p>
+        </form>
+        <div class="alert alert-info">Server Response: {{response | json}}</div>
+    </div>
+</div>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.2/jquery.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js" type="text/javascript"></script>
+<script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
+<script src="js/ng-upload.js" type="text/javascript"></script>
+<script type="text/javascript">
+    var app = angular.module('ngUploadApp', ['ngUpload']);
+
+    app.controller('mainCtrl', function ($scope) {
+        $scope.uploadComplete = function (content, completed) {
+            if (completed && content) {
+                console.log(content);
+                $scope.response = content; // Presumed content is a json string!
+                $scope.response.style = {
+                    color: $scope.response.color,
+                    "font-weight": "bold"
+                };
+
+                // Clear form (reason for using the 'ng-model' directive on the input elements)
+                $scope.fullname = '';
+                $scope.gender = '';
+                $scope.color = '';
+                // Look for way to clear the input[type=file] element
+            }
+        };
+    });
+</script>
+</body>
+</html>
