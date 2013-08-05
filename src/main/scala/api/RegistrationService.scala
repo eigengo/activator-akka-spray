@@ -38,17 +38,15 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
     } ~
     path("register" / "image") {
       post {
-        entity(as[MultipartFormData]) { data =>
-          complete {
-            data.fields.get("files[]") match {
-              case Some(imageEntity) =>
-                val size = imageEntity.entity.buffer.length
-                println(s"Uploaded $size")
-                ImageUploaded(size)
-              case None =>
-                println("No files")
-                ImageUploaded(0)
-            }
+        handleWith { data: MultipartFormData =>
+          data.fields.get("files[]") match {
+            case Some(imageEntity) =>
+              val size = imageEntity.entity.buffer.length
+              println(s"Uploaded $size")
+              ImageUploaded(size)
+            case None =>
+              println("No files")
+              ImageUploaded(0)
           }
         }
       }
