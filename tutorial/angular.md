@@ -12,9 +12,9 @@ will be uploaded. When the users click the _Start upload_ button, we start the u
 but each POST contains one file. The _Cancel upload_ button clears the form.
 
 #Spray code
-The requests are going to ``register/image``, so we need to add the appropriate "handler" to the
-``RegistrationService`` to handle POST to that path, to unmarshal the request as ``MultipartFormData``.
-We then ``complete`` the request with appropriate response.
+The requests are going to ``register/image``, so we need to add the appropriate "handler" to the ``RegistrationService``
+to handle POST to that path, to unmarshal the request as ``MultipartFormData``. We then ``complete`` the request with
+appropriate response.
 
 ```scala
 class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
@@ -85,8 +85,8 @@ path("register" / "image") {
 }
 ```
 
-This means that on POST to ``register/image``, we unmarshal the entity as ``MultipartFormData`` and apply
-the function
+This means that on POST to ``register/image``, we unmarshal the entity as ``MultipartFormData``
+and apply the function
 
 ```scala
 { data =>
@@ -209,11 +209,10 @@ space to post about the _proper_ AWS setup in the future.
 
 ##Development setup
 Let's use Apache to serve the AngularJS application at ``http://localhost/~USER/angular`` and let's
-host the Spray application (or, in fact, anything that listens on port ``8080``) at
-``http://localhost/~USER/app``.
+host the Spray application (or, in fact, anything that listens on port ``8080``) at ``http://localhost/~USER/app``.
 
 To make this happen, we'll enable Apache's per-user home pages and we'll drop in ``ProxyPass`` and
-``ProxyPassReverse`` directives. On my machine, the configuration for ``$USER`` lives
+``ProxyPassReverse`` directives. On my machine, the configuration for ``$USER`` lives 
 in ``/etc/apache2/users/$USER.conf``.
 
 ```xml
