@@ -1,0 +1,201 @@
+<html>
+<head>
+    <title>AngularJS Upload</title>
+</head>
+<body>
+<div>
+<h2>AngularJS Upload</h2>
+<p>This post follows up on the Akka and Spray post, and it extends it by adding a file upload handler. Thisallows us to upload images to the user's account. (Note that, as usual, the Akka code does nothing specialwith the uploaded files; it simply demonstrates that we can acccept <code>multipart/form-data</code>-encoded POST.)</p>
+<p><img src="/upload.png" title="Screenshot"/></p>
+<p>This is our AngularJS application in the browser. We press the <em>Add files...</em> button to add (images) thatwill be uploaded. When the users click the <em>Start upload</em> button, we start the uploads in parallel,but each POST contains one file. The <em>Cancel upload</em> button clears the form.</p>
+</div>
+<div>
+<h2>Spray code</h2>
+<p>The requests are going to <code>register/image</code>, so we need to add the appropriate "handler" to the <code>RegistrationService</code>to handle POST to that path, to unmarshal the request as <code>MultipartFormData</code>. We then <code>complete</code> the request withappropriate response.</p>
+<code><pre>
+class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
+  extends Directives with DefaultJsonFormats {
+
+  import akka.pattern.ask
+  import scala.concurrent.duration._
+  implicit val timeout = Timeout(2.seconds)
+
+  implicit val userFormat = jsonFormat4(User)
+  implicit val registerFormat = jsonFormat1(Register)
+  implicit val registeredFormat = jsonObjectFormat[Registered.type]
+  implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
+
+  implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
+    def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
+  }
+
+  val route =
+    path("register") {
+      post {
+        handleWith { ru: Register => (registration ? ru).mapTo[Either[NotRegistered.type, Registered.type]] }
+      }
+    } ~
+    path("register" / "image") {
+      post {
+        entity(as[MultipartFormData]) { data =>
+          complete {
+            data.fields.get("files[]") match {
+              case Some(imageEntity) =>
+                val size = imageEntity.entity.buffer.length
+                println(s"Uploaded $size")
+                "OK"
+              case None =>
+                println("No files")
+                "Not OK"
+            }
+          }
+        }
+      }
+    }
+
+}
+</pre></code>
+<p>This is the entire source code of the <code>RegistrationService</code> to show you where the new code fits in.The new bit is the usage of <code>entity(as[A]) { a => ... }</code>, which takes the posted <code>HttpEntity</code>,finds the instance of the <code>Unmarshaller</code> typeclass for the type <code>A</code>. When the unmarshalling succeeds,it applies the given function <code>{ a => ... }</code> to complete the request. In our case, we have</p>
+<code><pre>
+path("register" / "image") {
+  post {
+    entity(as[MultipartFormData]) { data =>
+      complete {
+        data.fields.get("files[]") match {
+          case Some(imageEntity) =>
+            val size = imageEntity.entity.buffer.length
+            println(s"Uploaded $size")
+            "OK"
+          case None =>
+            println("No files")
+            "Not OK"
+        }
+      }
+    }
+  }
+}
+</pre></code>
+<p>This means that on POST to <code>register/image</code>, we unmarshal the entity as <code>MultipartFormData</code>and apply the function</p>
+<code><pre>
+{ data =>
+  complete {
+    data.fields.get("files[]") match {
+      case Some(imageEntity) =>
+        val size = imageEntity.entity.buffer.length
+        println(s"Uploaded $size")
+        s"""{"size":$size}"""
+      case None =>
+        println("No files")
+        """{"size":0}"""
+    }
+  }
+}
+</pre></code>
+<p>To the successfully unmarshalled value. In that function, we <code>complete</code> the request by--ultimately--returning either <code>s"""{"size":$size}"""</code> or <code>"""{"size":0}"""</code>.</p>
+<p><img src="/hindenburg.png" title="Oh the humanity"/></p>
+</div>
+<div>
+<h2>Stringly-typed</h2>
+<p>Hand-constructing JSON, XML, ..., anyting really, is a <em>terrible idea</em>. Let's get rid of those<code>s"""{"size":$size}"""</code> and <code>"""{"size":0}"""</code> strings and replace them with a convenientcase class.</p>
+<code><pre>
+case class ImageUploaded(size: Int)
+</pre></code>
+<p>We can easily define the <code>JsonWriter</code> typeclass instance for the <code>ImageUploaded</code> type by addingan implicit value of type <code>JsonWriter[ImageUploaded]</code>; and this is exactly what the <code>jsonFormat</code>functions do.</p>
+<code><pre>
+implicit val imageUploadedFormat = jsonFormat1(ImageUploaded)
+</pre></code>
+</div>
+<div>
+<h2>Out with Strings</h2>
+<p>So, we add the case class and the <code>JsonWriter[ImageUpload]</code> typeclass instance, which allows us toget rid of the <code>String</code>s in the <code>complete</code> function.</p>
+<code><pre>
+class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
+  extends Directives with DefaultJsonFormats {
+
+  case class ImageUploaded(size: Int)
+  implicit val imageUploadedFormat = jsonFormat1(ImageUploaded)
+
+  ...
+
+  val route =
+    ...
+    path("register" / "image") {
+      post {
+        entity(as[MultipartFormData]) { data =>
+          complete {
+            data.fields.get("files[]") match {
+              case Some(imageEntity) =>
+                val size = imageEntity.entity.buffer.length
+                println(s"Uploaded $size")
+                ImageUploaded(size)
+              case None =>
+                println("No files")
+                ImageUploaded(0)
+            }
+          }
+        }
+      }
+    }
+
+}
+</pre></code>
+<p>Now, this is better there are no <code>String</code>s and we handle the file uploads quite nicely. Unfortunately,there are still <em>too many notes</em>. Dissecting the <code>post</code> handler, we have</p>
+<code><pre>
+entity(as[MultipartFormData]) { data =>
+  complete {
+    ImageUploaded(...)
+  }
+}
+</pre></code>
+<p>The <code>entity(as[A]) { a: A => complete { ... } }</code> can be replaced with <code>handleWith</code> the same codewe use in the <code>register</code> posts. And so, the final code is simply</p>
+<code><pre>
+path("register" / "image") {
+  post {
+    handleWith { data: MultipartFormData =>
+      data.fields.get("files[]") match {
+        case Some(imageEntity) =>
+          val size = imageEntity.entity.buffer.length
+          println(s"Uploaded $size")
+          ImageUploaded(size)
+        case None =>
+          println("No files")
+          ImageUploaded(0)
+      }
+    }
+  }
+}
+</pre></code>
+</div>
+<div>
+<h2>Running the AngularJS application</h2>
+<p>Now that we have the Spray application sorted out, let's tackle the JavaScript app. Its source is in<code>src/main/angular</code>. The main components are <code>index.html</code> and <code>js/app.js</code>. One cannot just openthe <code>index.html</code> <em>file</em> in the browser. The other resources (JavaScripts, stylesheets) will not loadproperly, but even if they did, the browser would refuse to call our Spray server, because the locationsdo not match. Our Spray server runs on <code>http://localhost:8080</code>, but the AngularJS application'slocation would be <code>file:///.../index.html</code>.</p>
+<p>To allow us to test it, we need to (easily) serve the AngularJS application <em>as well as</em> our Sprayapplication on the same location. In this post, I will only tackle the development setup, leaving mespace to post about the <em>proper</em> AWS setup in the future.</p>
+</div>
+<div>
+<h2>Development setup</h2>
+<p>Let's use Apache to serve the AngularJS application at <code>http://localhost/~USER/angular</code> and let'shost the Spray application (or, in fact, anything that listens on port <code>8080</code>) at <code>http://localhost/~USER/app</code>.</p>
+<p>To make this happen, we'll enable Apache's per-user home pages and we'll drop in <code>ProxyPass</code> and<code>ProxyPassReverse</code> directives. On my machine, the configuration for <code>$USER</code> livesin <code>/etc/apache2/users/$USER.conf</code>.</p>
+<code><pre>
+<Directory "/Users/$USER/Sites/">
+	Options Indexes Multiviews +FollowSymLinks
+	AllowOverride AuthConfig Limit
+	Order allow,deny
+	Allow from all
+</Directory>
+
+ProxyPass /~$USER/app/ http://localhost:8080/
+ProxyPassReverse /~$USER/app/ http://localhost:8080/
+</pre></code>
+<p>Of course, you cannot use <code>$USER</code>, you must replace it with your real username I don't really wantto <em>copy</em> the <code>src/main/angular</code> directory to the <code>~/Sites</code> directory, so I've added the<code>+FollowSymLinks</code> directive and created a symbolic link in <code>~/Sites</code> to point to wherever I have<code>src/main/angular</code>. In my case, the listing of <code>~/Sites</code> is</p>
+<code><pre>
+~/Sites$ ls -la
+total 16
+lrwxr-xr-x  ... angular -> /.../akka-spray/src/main/angular
+-rw-r--r--  ... index.html
+</pre></code>
+<p>Now, after adding this file and starting (or restarting) Apache <code>sudo apachectl start</code> (or <code>sudo apachectl restart</code>),you are ready to see the app by going to <code>http://localhost/~USER/angular</code>.</p>
+<p>So, you are now ready to go opening <code>http://localhost/~USER/angular</code> shows the AngularJS application,where you can add as many files as you like, and clicking the <em>Start upload</em> button sends the files to theSpray application. The Spray application unceremoniously prints the file size I shall leave some interesting processinglogic as exercise for the readers.</p>
+<p>As usual, the source code is at <a href="https://github.com/eigengo/activator-akka-spray" target="_blank">https//github.com/eigengo/activator-akka-spray</a>;feel free to report issues, or to send your contributions</p>
+</div>
+</body>
+</html>

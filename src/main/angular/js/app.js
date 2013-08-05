@@ -15,7 +15,7 @@
 (function () {
     'use strict';
 
-    var url = '//localhost/app/register/image';
+    var url = '//localhost/~janmachacek/app/register/image';
 
     angular.module('demo', [
         'blueimp.fileupload'
