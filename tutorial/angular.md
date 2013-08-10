@@ -212,7 +212,7 @@ Let's use Apache to serve the AngularJS application at ``http://localhost/~USER/
 host the Spray application (or, in fact, anything that listens on port ``8080``) at ``http://localhost/~USER/app``.
 
 To make this happen, we'll enable Apache's per-user home pages and we'll drop in ``ProxyPass`` and
-``ProxyPassReverse`` directives. On my machine, the configuration for ``$USER`` lives 
+``ProxyPassReverse`` directives. On my machine, the configuration for ``$USER`` lives
 in ``/etc/apache2/users/$USER.conf``.
 
 ```xml
