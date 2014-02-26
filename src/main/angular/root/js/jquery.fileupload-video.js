@@ -1,5 +1,5 @@
 /*
- * jQuery File Upload Audio Preview Plugin 1.0.3
+ * jQuery File Upload Video Preview Plugin 1.0.3
  * https://github.com/blueimp/jQuery-File-Upload
  *
  * Copyright 2013, Sebastian Tschan
@@ -19,7 +19,7 @@
         define([
             'jquery',
             'load-image',
-            './jquery.fileupload-process'
+            './jquery.fileupload-process.js'
         ], factory);
     } else {
         // Browser globals:
@@ -34,67 +34,67 @@
     // Prepend to the default processQueue:
     $.blueimp.fileupload.prototype.options.processQueue.unshift(
         {
-            action: 'loadAudio',
+            action: 'loadVideo',
             // Use the action as prefix for the "@" options:
             prefix: true,
             fileTypes: '@',
             maxFileSize: '@',
-            disabled: '@disableAudioPreview'
+            disabled: '@disableVideoPreview'
         },
         {
-            action: 'setAudio',
-            name: '@audioPreviewName',
-            disabled: '@disableAudioPreview'
+            action: 'setVideo',
+            name: '@videoPreviewName',
+            disabled: '@disableVideoPreview'
         }
     );
 
-    // The File Upload Audio Preview plugin extends the fileupload widget
-    // with audio preview functionality:
+    // The File Upload Video Preview plugin extends the fileupload widget
+    // with video preview functionality:
     $.widget('blueimp.fileupload', $.blueimp.fileupload, {
 
         options: {
-            // The regular expression for the types of audio files to load,
+            // The regular expression for the types of video files to load,
             // matched against the file type:
-            loadAudioFileTypes: /^audio\/.*$/
+            loadVideoFileTypes: /^video\/.*$/
         },
 
-        _audioElement: document.createElement('audio'),
+        _videoElement: document.createElement('video'),
 
         processActions: {
 
-            // Loads the audio file given via data.files and data.index
-            // as audio element if the browser supports playing it.
+            // Loads the video file given via data.files and data.index
+            // as video element if the browser supports playing it.
             // Accepts the options fileTypes (regular expression)
             // and maxFileSize (integer) to limit the files to load:
-            loadAudio: function (data, options) {
+            loadVideo: function (data, options) {
                 if (options.disabled) {
                     return data;
                 }
                 var file = data.files[data.index],
                     url,
-                    audio;
-                if (this._audioElement.canPlayType &&
-                        this._audioElement.canPlayType(file.type) &&
+                    video;
+                if (this._videoElement.canPlayType &&
+                        this._videoElement.canPlayType(file.type) &&
                         ($.type(options.maxFileSize) !== 'number' ||
                             file.size <= options.maxFileSize) &&
                         (!options.fileTypes ||
                             options.fileTypes.test(file.type))) {
                     url = loadImage.createObjectURL(file);
                     if (url) {
-                        audio = this._audioElement.cloneNode(false);
-                        audio.src = url;
-                        audio.controls = true;
-                        data.audio = audio;
+                        video = this._videoElement.cloneNode(false);
+                        video.src = url;
+                        video.controls = true;
+                        data.video = video;
                         return data;
                     }
                 }
                 return data;
             },
 
-            // Sets the audio element as a property of the file object:
-            setAudio: function (data, options) {
-                if (data.audio && !options.disabled) {
-                    data.files[data.index][options.name || 'preview'] = data.audio;
+            // Sets the video element as a property of the file object:
+            setVideo: function (data, options) {
+                if (data.video && !options.disabled) {
+                    data.files[data.index][options.name || 'preview'] = data.video;
                 }
                 return data;
             }
