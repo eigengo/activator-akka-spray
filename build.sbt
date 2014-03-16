@@ -1,6 +1,7 @@
-import xerial.sbt.Pack._
 import sbt._
 import Keys._
+import org.sbtidea.SbtIdeaPlugin._
+import spray.revolver.RevolverPlugin.Revolver
 
 name := "activator-akka-spray"
 
@@ -26,7 +27,9 @@ libraryDependencies ++= {
     "org.specs2" %% "specs2" % "1.14" % "test",
     "io.spray" % "spray-testkit" % sprayVersion % "test",
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
-    "com.novocode" % "junit-interface" % "0.7" % "test->default"
+    "com.novocode" % "junit-interface" % "0.7" % "test->default",
+    "org.scalatest"       %   "scalatest_2.10" % "2.0" % "test",
+    "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test"
   )
 }
 
@@ -46,8 +49,8 @@ unmanagedResourceDirectories in Compile <++= baseDirectory {
   base => Seq(base / "src/main/angular")
 }
 
-packSettings
+Revolver.settings : Seq[sbt.Def.Setting[_]]
 
-packMain := Map("rest" -> "Rest")
+ideaExcludeFolders += ".idea"
 
 crossPaths := false
