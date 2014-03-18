@@ -16,7 +16,8 @@ trait Api extends HttpService with CoreActors with Core {
   //protected implicit val system : ActorSystem
   val routes =
     new RegistrationService(registration).route ~
-    new MessengerService(messenger).route
+    new MessengerService(messenger).route ~
+    new FruitService(fruit).fruitroute
 
 
 }

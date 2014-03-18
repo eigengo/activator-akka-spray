@@ -29,7 +29,7 @@ libraryDependencies ++= {
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
     "com.novocode" % "junit-interface" % "0.7" % "test->default",
     "org.scalatest"       %   "scalatest_2.10" % "2.0" % "test",
-    "org.seleniumhq.selenium" % "selenium-java" % "2.35.0" % "test"
+    "org.seleniumhq.selenium.fluent" % "fluent-selenium" % "1.14.5" % "test"
   )
 }
 

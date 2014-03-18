@@ -3,9 +3,12 @@ package web
 import org.scalatest.{BeforeAndAfterAll, Matchers, FlatSpec}
 import org.scalatest.selenium.{WebBrowser}
 import org.openqa.selenium.htmlunit.HtmlUnitDriver
-import org.openqa.selenium.WebDriver
+import org.openqa.selenium._
 import java.net.URL
 import java.io.IOException
+import org.seleniumhq.selenium.fluent.FluentBy
+import java.util.concurrent.TimeUnit
+import scala.Some
 
 
 class SimpleSeleniumTest extends FlatSpec with BeforeAndAfterAll with Matchers with WebBrowser  {
@@ -60,6 +63,29 @@ class SimpleSeleniumTest extends FlatSpec with BeforeAndAfterAll with Matchers w
     } catch {
       case io: IOException => false
     } finally http.disconnect()
+  }
+}
+
+object ngWait {
+  def ngWait(by: By ) = {
+    new FluentBy() {
+      override def beforeFindElement(driver : WebDriver ) {
+        driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
+        driver match {
+          case javaScriptExecutor: JavascriptExecutor =>
+            javaScriptExecutor.executeAsyncScript("var callback = arguments[arguments.length - 1];" +
+              "angular.element(document.body).injector().get('$browser').notifyWhenNoOutstandingRequests(callback);");
+        }
+        super.beforeFindElement(driver)
+      }
+      override def findElements( context : SearchContext) : java.util.List[WebElement] =  {
+        by.findElements(context);
+      }
+
+      override def findElement(context : SearchContext) : WebElement = {
+        by.findElement(context);
+      }
+    };
   }
 }
 
