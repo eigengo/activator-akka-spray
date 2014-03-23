@@ -27,9 +27,11 @@ libraryDependencies ++= {
     "org.specs2" %% "specs2" % "1.14" % "test",
     "io.spray" % "spray-testkit" % sprayVersion % "test",
     "com.typesafe.akka" %% "akka-testkit" % akkaVersion % "test",
-    "com.novocode" % "junit-interface" % "0.7" % "test->default",
+    "com.novocode" % "junit-interface" % "0.11-RC1" % "test->default" exclude("org.hamcrest", "hamcrest-core"),
     "org.scalatest"       %   "scalatest_2.10" % "2.0" % "test",
-    "org.seleniumhq.selenium.fluent" % "fluent-selenium" % "1.14.5" % "test"
+    "org.seleniumhq.selenium.fluent" % "fluent-selenium" % "1.14.5" % "test",
+    "com.codahale.metrics" % "metrics-core" % "3.0.0" % "test",
+   "org.hamcrest" % "hamcrest-all" % "1.3" % "test"
   )
 }
 
@@ -54,3 +56,7 @@ Revolver.settings : Seq[sbt.Def.Setting[_]]
 ideaExcludeFolders += ".idea"
 
 crossPaths := false
+
+conflictManager := ConflictManager.strict
+
+net.virtualvoid.sbt.graph.Plugin.graphSettings

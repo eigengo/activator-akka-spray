@@ -11,7 +11,7 @@ import spray.http.MediaTypes._
 /**
  * Created by antoine on 3/17/14.
  */
-class FruitService (fruit: ActorRef)(implicit executionContext: ExecutionContext)
+class FruitService(fruit: ActorRef)(implicit executionContext: ExecutionContext)
   extends Directives with DefaultJsonFormats {
 
 
@@ -20,7 +20,7 @@ class FruitService (fruit: ActorRef)(implicit executionContext: ExecutionContext
   val fruitroute =
     path("fruits") {
       get {
-        respondWithMediaType(`application/json`)  {
+        respondWithMediaType(`application/json`) {
           _.complete {
             """ [
                     {"name": "banana", "price": "0.79"},
