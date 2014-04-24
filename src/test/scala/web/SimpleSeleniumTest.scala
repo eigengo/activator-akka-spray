@@ -9,28 +9,49 @@ import java.io.IOException
 import org.seleniumhq.selenium.fluent.FluentBy
 import java.util.concurrent.TimeUnit
 import scala.Some
-
+import org.openqa.selenium.phantomjs.PhantomJSDriver
+import com.paulhammant.ngwebdriver.WaitForAngularRequestsToFinish.waitForAngularRequestsToFinish;
+import org.hamcrest.CoreMatchers.containsString
+import org.hamcrest.CoreMatchers.is
+import org.hamcrest.CoreMatchers.startsWith
+import org.hamcrest.MatcherAssert.assertThat
+import org.openqa.selenium.By._
+import org.openqa.selenium.By.tagName
+import com.paulhammant.ngwebdriver.ByAngular
+import org.openqa.selenium.firefox.FirefoxDriver
 
 class SimpleSeleniumTest extends FlatSpec with BeforeAndAfterAll with Matchers with WebBrowser  {
 
   behavior of "Spray Web Application"
-  implicit val webDriver: WebDriver = new HtmlUnitDriver()
+  implicit val webDriver: WebDriver = new FirefoxDriver()
+  var ng : ByAngular = null
+  var javaScriptExecutor: JavascriptExecutor  = null
   // start the server as this is necessary for the tests
   Rest
 
    override def beforeAll() {
     // firing up HTTP is asynchronous and takes a variable amount of time
     waitForServerStartup()
+     javaScriptExecutor =
+     webDriver match {
+       case myJavaScriptExecutor: JavascriptExecutor => ng = new ByAngular(myJavaScriptExecutor)
+         waitForAngularRequestsToFinish(myJavaScriptExecutor)
+         myJavaScriptExecutor
+       case _ => println("webDriver is not a JavascriptExecutor")
+         null
+     }
+
+
    }
 
   "the home page " should " have an input of type file" in {
-    go to (serverUrl.toString)
-    val fileinput: Option[SimpleSeleniumTest.this.type#Element] = find(xpath("//input[@type='file']"))
+    webDriver.get(serverUrl + "fruits.html")
+    val wes  = webDriver.findElements(ng.repeater("fruit in fruitlist"));
 
-    fileinput match {
-      case Some(elem) => elem.attribute("name") === ("files[]")
-      case None => fail("h1 not found")
-    }
+    assertThat(wes.size(), is(3));
+    assertThat(wes.get(0).findElement(org.openqa.selenium.By.className("name")).getText(), containsString("banana"));
+    assertThat(wes.get(1).findElement(org.openqa.selenium.By.className("name")).getText(), containsString("apple"));
+    assertThat(wes.get(2).findElement(org.openqa.selenium.By.className("name")).getText(), containsString("raspberry"));
   }
 
   def serverUrl = new URL("http://localhost:8080/")

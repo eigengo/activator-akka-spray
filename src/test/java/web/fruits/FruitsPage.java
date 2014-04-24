@@ -1,5 +1,6 @@
 package web.fruits;
 
+import org.openqa.selenium.phantomjs.PhantomJSDriver;
 import web.BasePage;
 import org.openqa.selenium.*;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -18,7 +19,7 @@ import static org.seleniumhq.selenium.fluent.FluentBy.attribute;
 public class FruitsPage extends BasePage {
     public FruitsPage(FirefoxDriver wd) {
         super(wd);
-        div(ngWait(attribute("ng-controller", "fruits-controller"))).getText().shouldContain("FRUITS BLA");
+        div(ngWait(attribute("ng-controller", "fruits-controller"))).getText().shouldContain("FRUITS CHOICE");
     }
     public TestableString fruitName(int index) {
         return tds(className("name")).get(index).getText();
