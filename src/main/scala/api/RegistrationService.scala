@@ -14,7 +14,7 @@ import scala.Some
 class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
   extends Directives with DefaultJsonFormats {
 
-  case class ImageUploaded(size: Int)
+  case class ImageUploaded(size: Long)
 
   import akka.pattern.ask
   import scala.concurrent.duration._
@@ -39,9 +39,9 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
     path("register" / "image") {
       post {
         handleWith { data: MultipartFormData =>
-          data.fields.get("files[]") match {
+          data.get("files[]") match {
             case Some(imageEntity) =>
-              val size = imageEntity.entity.buffer.length
+              val size = imageEntity.entity.data.length
               println(s"Uploaded $size")
               ImageUploaded(size)
             case None =>

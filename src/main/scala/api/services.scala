@@ -3,8 +3,7 @@ package api
 import spray.http.StatusCodes._
 import spray.http._
 import spray.routing._
-import directives.{CompletionMagnet, RouteDirectives}
-import spray.util.{SprayActorLogging, LoggingContext}
+import spray.util.{ LoggingContext}
 import util.control.NonFatal
 import spray.httpx.marshalling.Marshaller
 import spray.http.HttpHeaders.RawHeader
@@ -55,7 +54,7 @@ trait FailureHandling {
                                     error: StatusCode = InternalServerError)
                                    (implicit log: LoggingContext): Unit = {
     log.error(thrown, ctx.request.toString)
-    ctx.complete(error, message)
+    ctx.complete((error, message))
   }
 
 }
@@ -66,13 +65,13 @@ trait FailureHandling {
  *
  * @param route the (concatenated) route
  */
-class RoutedHttpService(route: Route) extends Actor with HttpService with SprayActorLogging {
+class RoutedHttpService(route: Route) extends Actor with HttpService with ActorLogging {
 
   implicit def actorRefFactory = context
 
   implicit val handler = ExceptionHandler {
     case NonFatal(ErrorResponseException(statusCode, entity)) => ctx =>
-      ctx.complete(statusCode, entity)
+      ctx.complete((statusCode, entity))
 
     case NonFatal(e) => ctx => {
       log.error(e, InternalServerError.defaultMessage)
@@ -87,22 +86,3 @@ class RoutedHttpService(route: Route) extends Actor with HttpService with SprayA
 
 }
 
-/**
- * Constructs ``CompletionMagnet``s that set the ``Access-Control-Allow-Origin`` header for modern browsers' AJAX
- * requests on different domains / ports.
- */
-trait CrossLocationRouteDirectives extends RouteDirectives {
-
-  implicit def fromObjectCross[T : Marshaller](origin: String)(obj: T) =
-    new CompletionMagnet {
-      def route: StandardRoute = new CompletionRoute(OK,
-        RawHeader("Access-Control-Allow-Origin", origin) :: Nil, obj)
-    }
-
-  private class CompletionRoute[T : Marshaller](status: StatusCode, headers: List[HttpHeader], obj: T)
-    extends StandardRoute {
-    def apply(ctx: RequestContext): Unit = {
-      ctx.complete(status, headers, obj)
-    }
-  }
-}

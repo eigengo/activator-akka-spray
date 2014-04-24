@@ -23,7 +23,7 @@
             'load-image-exif',
             'load-image-ios',
             'canvas-to-blob',
-            './jquery.fileupload-process'
+            './jquery.fileupload-process.js'
         ], factory);
     } else {
         // Browser globals:
