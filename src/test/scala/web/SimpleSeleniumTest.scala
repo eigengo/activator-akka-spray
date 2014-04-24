@@ -23,18 +23,20 @@ import org.openqa.selenium.firefox.FirefoxDriver
 class SimpleSeleniumTest extends FlatSpec with BeforeAndAfterAll with Matchers with WebBrowser  {
 
   behavior of "Spray Web Application"
-  implicit val webDriver: WebDriver = new FirefoxDriver()
+  var webDriver: WebDriver = null
   var ng : ByAngular = null
   var javaScriptExecutor: JavascriptExecutor  = null
   // start the server as this is necessary for the tests
-  Rest
 
    override def beforeAll() {
     // firing up HTTP is asynchronous and takes a variable amount of time
     waitForServerStartup()
+     webDriver = new FirefoxDriver()
      javaScriptExecutor =
      webDriver match {
        case myJavaScriptExecutor: JavascriptExecutor => ng = new ByAngular(myJavaScriptExecutor)
+         webDriver.manage.timeouts.setScriptTimeout(30, TimeUnit.SECONDS)
+         webDriver.get(serverUrl + "fruits.html")
          waitForAngularRequestsToFinish(myJavaScriptExecutor)
          myJavaScriptExecutor
        case _ => println("webDriver is not a JavascriptExecutor")
@@ -45,7 +47,7 @@ class SimpleSeleniumTest extends FlatSpec with BeforeAndAfterAll with Matchers w
    }
 
   "the home page " should " have an input of type file" in {
-    webDriver.get(serverUrl + "fruits.html")
+
     val wes  = webDriver.findElements(ng.repeater("fruit in fruitlist"));
 
     assertThat(wes.size(), is(3));
