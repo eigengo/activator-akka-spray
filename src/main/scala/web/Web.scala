@@ -1,9 +1,10 @@
 package web
 
 import core.{CoreActors, Core}
-import api.Api
+import api.{RoutedHttpService, Api}
 import akka.io.IO
 import spray.can.Http
+import akka.actor.{ActorSystem, Props}
 
 /**
  * Provides the web server (spray-can) for the REST api in ``Api``, using the actor system
@@ -16,9 +17,4 @@ import spray.can.Http
  * Benefits of separate ``ActorSystem`` include the ability to use completely different
  * configuration, especially when it comes to the threading model.
  */
-trait Web {
-  this: Api with CoreActors with Core =>
-
-  IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8080)
-
-}
+trait Web extends StaticResources with CoreActors with Core with Api
