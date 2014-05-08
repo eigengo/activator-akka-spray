@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html ng-app="fruitapp">
+<head>
+    <title>fruits</title>
+</head>
+<body>
+<div>
+  <div ng-controller="fruits-controller" ng-cloak>
+      FRUITS CHOICE
+       <table border="2" id="fruitlist">
+           <tr>
+           <th>name</th>
+           <th>price</th>
+           </tr>
+           <tr ng-repeat="fruit in fruitlist">
+               <td class="name">{{fruit.name}}</td>
+               <td class="price">{{fruit.price}}</td>
+           </tr>
+       </table>
+  </div>
+</div>
+  <script type="text/javascript" src="js/angular.js"> </script>
+  <script type="text/javascript" src="js/angular-resource.js" > </script>
+
+  <script type="text/javascript" src="js/lodash.js" > </script>
+  <script type="text/javascript" src="js/restangular.js" > </script>
+  <script type="text/javascript" src="js/fruits/app.js"> </script>
+  <script type="text/javascript" src="js/fruits/controllers.js" > </script>
+
+</body>
+</html>
