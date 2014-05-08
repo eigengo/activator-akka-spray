@@ -27,7 +27,6 @@ class FruitService(fruit: ActorRef)(implicit executionContext: ExecutionContext)
                      {"name": "apple", "price": "1.89"},
                     {"name": "raspberry", "price": "12.50"}
                   ]"""
-
           }
         }
       }

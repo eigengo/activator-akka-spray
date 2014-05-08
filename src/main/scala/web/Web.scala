@@ -17,7 +17,4 @@ import akka.actor.{ActorSystem, Props}
  * Benefits of separate ``ActorSystem`` include the ability to use completely different
  * configuration, especially when it comes to the threading model.
  */
-trait Web  extends StaticResources with CoreActors with Core with Api
-{
-
-}
+trait Web extends StaticResources with CoreActors with Core with Api

@@ -1,6 +1,5 @@
 import sbt._
 import Keys._
-import org.sbtidea.SbtIdeaPlugin._
 import spray.revolver.RevolverPlugin.Revolver
 
 name := "activator-akka-spray"
@@ -8,15 +7,15 @@ name := "activator-akka-spray"
 
 version := "1.0"
 
-scalaVersion := "2.10.3"
+scalaVersion := "2.10.4"
 
 resolvers += "spray repo" at "http://repo.spray.io"
 
 resolvers += "spray nightlies" at "http://nightlies.spray.io"
 
 libraryDependencies ++= {
-  val akkaVersion  = "2.2.3"
-  val sprayVersion = "1.2.0"
+  val akkaVersion  = "2.3.2"
+  val sprayVersion = "1.3.1"
   Seq(
     "com.typesafe.akka" %% "akka-actor" % akkaVersion
       exclude ("org.scala-lang" , "scala-library"),
@@ -57,8 +56,6 @@ unmanagedResourceDirectories in Compile <++= baseDirectory {
 }
 
 Revolver.settings : Seq[sbt.Def.Setting[_]]
-
-ideaExcludeFolders += ".idea"
 
 crossPaths := false
 
