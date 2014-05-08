@@ -1,15 +1,11 @@
 #AngularJS Upload
 
 #AngularJS Upload
-This post follows up on the Akka and Spray post, and it extends it by adding a file upload handler. This
-allows us to upload images to the user's account. (Note that, as usual, the Akka code does nothing special
-with the uploaded files; it simply demonstrates that we can acccept ``multipart/form-data``-encoded POST.)
+This post follows up on the Akka and Spray post, and it extends it by adding a file upload handler. This allows us to upload images to the user's account. (Note that, as usual, the Akka code does nothing special with the uploaded files; it simply demonstrates that we can acccept ``multipart/form-data``-encoded POST.)
 
 ![Screenshot](/upload.png)
 
-This is our AngularJS application in the browser. We press the _Add files..._ button to add (images) that
-will be uploaded. When the users click the _Start upload_ button, we start the uploads in parallel,
-but each POST contains one file. The _Cancel upload_ button clears the form.
+This is our AngularJS application in the browser. We press the _Add files..._ button to add (images) that will be uploaded. When the users click the _Start upload_ button, we start the uploads in parallel, but each POST contains one file. The _Cancel upload_ button clears the form.
 
 #Spray code
 The requests are going to ``register/image``, so we need to add the appropriate "handler" to the ``RegistrationService``

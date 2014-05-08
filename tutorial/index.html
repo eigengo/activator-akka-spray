@@ -11,7 +11,7 @@
 <div>
 <h2>Akka and Spray</h2>
 <p>Let me begin by showing the overall structure of the application we are building.</p>
-<p><img src="tutorial/overall.png" title="Overall structure"/></p>
+<p><img src="/overall.png" title="Overall structure"/></p>
 <p>In this template  tutorial, you will learn how to construct <a href="http://akka.io" target="_blank">Akka</a>-based applications; how to test them (using <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a> and <a href="http://etorreborre.github.io/specs2/" target="_blank">Specs2</a>; and how to provide RESTful HTTP API using <a href="http://spray.io/" target="_blank">Spray</a>.</p>
 </div>
 <div>
@@ -52,7 +52,7 @@ object Cli extends App with BootedCore with CoreActors
 </pre></code>
 <p>I must be mindful of the initialization order, though. It would be an error to write <code>object Cli extends App with CoreActors with BootedCore</code></p>
 <p>It is because the <code>BootedCore</code>'s implementation of the <code>system</code> method is <code>implicit val system = ActorSystem("akka-spray")</code> and if I write <code>object Cli extends App with CoreActors with BootedCore</code>, the code in <code>CoreActors</code> runs before the code in <code>BootedCore</code>--meaning that when the code in <code>CoreActors</code> runs, the value of the <code>system</code> <code>val</code> is still <code>null</code>.</p>
-<p>Having to worry about the order in which I mix in the traits is wholly unsatisfactory. I need to find a way in which a <code>val</code> can be evaluated immediately when its value is required, but once it is evaluated, it behaves like an ordinary <code>val</code>. Rephrasing, I want a member whose value will be computed and remembered on first access, andsubsequent accesses will return the remembered value.</p>
+<p>Having to worry about the order in which I mix in the traits is wholly unsatisfactory. I need to find a way in which a <code>val</code> can be evaluated immediately when its value is required, but once it is evaluated, it behaves like an ordinary <code>val</code>. Rephrasing, I want a member whose value will be computed and remembered on first access, and subsequent accesses will return the remembered value.</p>
 <p>To do this in Scala, I mark the <code>val</code> as <code>_lazy_</code>. Thus, our <code>BootedCore</code>'s <code>system</code> becomes</p>
 <code><pre>
 trait BootedCore extends Core {
@@ -68,7 +68,7 @@ trait BootedCore extends Core {
 <div>
 <h2>Testing</h2>
 <p>Let's now explore why I did so much code gymnastics. I could have just as easily defined the <code>CoreActors</code> trait to contain all the code in <code>Core</code> and <code>BootedCore</code>.</p>
-<p>The motivation was testing. When I am using Akka's <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a>, we construct a test-only <code>ActorSystem</code>. This testing <code>ActorSystem</code> allows us to test the actors as if the messages sent and received were method calls. In other words, the <code>ActorSystem</code> in our tests uses the<code>CallingThreadDispatcher</code>, making the message delivery synchronous.</p>
+<p>The motivation was testing. When I am using Akka's <a href="http://doc.akka.io/docs/akka/snapshot/scala/testing.html" target="_blank">TestKit</a>, we construct a test-only <code>ActorSystem</code>. This testing <code>ActorSystem</code> allows us to test the actors as if the messages sent and received were method calls. In other words, the <code>ActorSystem</code> in our tests uses the <code>CallingThreadDispatcher</code>, making the message delivery synchronous.</p>
 <p>As it happens, the <code>TestKit</code> contains a member called <code>system: ActorSystem</code>; and it matches the <code>Core</code> trait. Therefore, it is easy to make our <em>specification</em> implement the <code>Core</code> trait. This in turn means that our test satisfies the self-type annotation of the <code>CoreActors</code> trait.</p>
 <p>And thus, I can easily write a test for our entire application's structure.</p>
 <code><pre>
@@ -76,8 +76,8 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
   ...
 }
 </pre></code>
-<p>I extend the <code>TestKit</code> class, which gives us access to all the underlying Akka's test mechanisms; I also mix in <a href="http://etorreborre.github.io/specs2/" target="_blank">Specs2</a>'s <code>SpecificationLike</code>, which gives us the convenient DSL for writing our test scenarios and assertions. Finally, because I am writing code to test <em>my</em> actors, I mix in the <code>CoreActors</code> and <code>Core</code> traits.I do not need to do any more work, because the member <code>system: ActorSystem</code> fully implements the <code>Core</code> trait. However, I need to implement the <code>Core</code> trait to satisfy the self-type declaration of the <code>CoreActors</code>.</p>
-<p>I could have defined <code>Core</code> to be <a href="http://docs.scala-lang.org/glossary/" target="_blank">structural type</a>, in which case,I would not have to worry about implementing <code>Core</code> here. If you want to try it out, remove the <code>trait Core { ... }</code> and replace it with</p>
+<p>I extend the <code>TestKit</code> class, which gives us access to all the underlying Akka's test mechanisms; I also mix in <a href="http://etorreborre.github.io/specs2/" target="_blank">Specs2</a>'s <code>SpecificationLike</code>, which gives us the convenient DSL for writing our test scenarios and assertions. Finally, because I am writing code to test <em>my</em> actors, I mix in the <code>CoreActors</code> and <code>Core</code> traits. I do not need to do any more work, because the member <code>system: ActorSystem</code> fully implements the <code>Core</code> trait. However, I need to implement the <code>Core</code> trait to satisfy the self-type declaration of the <code>CoreActors</code>.</p>
+<p>I could have defined <code>Core</code> to be <a href="http://docs.scala-lang.org/glossary/" target="_blank">structural type</a>, in which case, I would not have to worry about implementing <code>Core</code> here. If you want to try it out, remove the <code>trait Core { ... }</code> and replace it with</p>
 <code><pre>
 package object core {
 
@@ -121,9 +121,9 @@ import RegistrationActor._
 </div>
 <div>
 <h2>Testing the <code>RegistrationActor</code></h2>
-<p>As simple as the <code>RegistrationActor</code> is, I can (and <em>should</em>) still test it.I can either test the actor in isolation, writing a <em>unit test</em>, or I can test ourentire application, but focusing on the <code>RegistrationActor</code>--an <em>integration test</em>.</p>
+<p>As simple as the <code>RegistrationActor</code> is, I can (and <em>should</em>) still test it. I can either test the actor in isolation, writing a <em>unit test</em>, or I can test our entire application, but focusing on the <code>RegistrationActor</code>--an <em>integration test</em>.</p>
 <p>I will show the integration test approach here.</p>
-<p>To allow us to examine what happens in our actors, I need to use special--crippled--<code>ActorSystem</code> that processes the messages synchronously. To the code, then. Weextend the <code>TestKit</code> class and mix in the required traits to construct the test.</p>
+<p>To allow us to examine what happens in our actors, I need to use special--crippled-- <code>ActorSystem</code> that processes the messages synchronously. To the code, then. We extend the <code>TestKit</code> class and mix in the required traits to construct the test.</p>
 <code><pre>
 class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLike with CoreActors with Core {
   sequential
@@ -147,13 +147,13 @@ class RegistrationActorSpec extends TestKit(ActorSystem()) with SpecificationLik
 
 }
 </pre></code>
-<p>This is the entire body of our test. I instantiate the actors in <code>CoreActors</code>, satisfying the <code>Core</code> self-type annotation by having the <code>RegistrationActorSpec</code> implement the <code>Core</code> trait. (Remember, I can do that just by writing <code>with Core</code>, because <code>TestKit</code> already contains the member <code>system: ActorSystem</code>, which isall that is needed to fully implement <code>Core</code>.)</p>
-<p>Onwards. If you run the test, it will fail. It will complain about failing timeouts, namely<code>
+<p>This is the entire body of our test. I instantiate the actors in <code>CoreActors</code>, satisfying the <code>Core</code> self-type annotation by having the <code>RegistrationActorSpec</code> implement the <code>Core</code> trait. (Remember, I can do that just by writing <code>with Core</code>, because <code>TestKit</code> already contains the member <code>system: ActorSystem</code>, which is all that is needed to fully implement <code>Core</code>.)</p>
+<p>Onwards. If you run the test, it will fail. It will complain about failing timeouts, namely <code>
 assertion failed: timeout (3 seconds) during expectMsgClass waiting for class core.RegistrationActor$NotRegistered$
 </code></p>
 <p>And yet, if you place a breakpoint in the <code>RegistrationActor</code>'s <code>receive</code>, you will see that it is indeed executing; replying to the <code>sender</code> with the appropriate message.</p>
-<p>The only conclusion is that the <code>sender</code> itself is somehow broken. Indeed. Going back to our test, I write <code>registration ! Register(mkUser(""))</code>. If you explore the <code>!</code> function, you will see that it is a curried function, whose first parameter list is the message to be sent, and its second parameter list is the <code>ActorRef</code> which represents the sender. It is marked as <code>implicit</code>, but it also contains a <em>default value</em>.So, if no <code>ActorRef</code> instance is available implicitly, the default value will be used instead. Unfortunately for me here, the default value is <code>Actor.noSender</code>.</p>
-<p>To fix the problem, all I need to do is have an implicit <code>ActorRef</code> value. However, this <code>ActorRef</code> should also somehow interact with the rest of the code in TestKit. Furtunately for the lazy, TestKit provides the <code>ImplicitSender</code> trait, which makes the <code>testActor</code> implicitly available; and the <code>testActor</code> interacts withall the <code>expect...</code> functions in TestKit.</p>
+<p>The only conclusion is that the <code>sender</code> itself is somehow broken. Indeed. Going back to our test, I write <code>registration ! Register(mkUser(""))</code>. If you explore the <code>!</code> function, you will see that it is a curried function, whose first parameter list is the message to be sent, and its second parameter list is the <code>ActorRef</code> which represents the sender. It is marked as <code>implicit</code>, but it also contains a <em>default value</em>. So, if no <code>ActorRef</code> instance is available implicitly, the default value will be used instead. Unfortunately for me here, the default value is <code>Actor.noSender</code>.</p>
+<p>To fix the problem, all I need to do is have an implicit <code>ActorRef</code> value. However, this <code>ActorRef</code> should also somehow interact with the rest of the code in TestKit. Furtunately for the lazy, TestKit provides the <code>ImplicitSender</code> trait, which makes the <code>testActor</code> implicitly available; and the <code>testActor</code> interacts with all the <code>expect...</code> functions in TestKit.</p>
 <code><pre>
 class RegistrationActorSpec extends TestKit(ActorSystem()) 
   with SpecificationLike with CoreActors with Core with ImplicitSender {
@@ -173,7 +173,7 @@ class RegistrationActorSpec extends TestKit(ActorSystem())
 <li><code>spray-json</code> for JSON marshallers and unmarshallers</li>
 </ul>
 <p>This feels like quite a handful, but you will see that the code is rather succinct and, of course, type safe. Even more importantly, the Spray code does not interfere with the core of our system. The core can remain completely oblivious of the way in which it is exposed.</p>
-<p>I continue to strictly separate the layers of (even if so trivial) application; therefore, I will separate the REST API from the code that starts the HTTP server hosting the API. In keeping with the rest of the system, I will split the layers into traits, giving me the <code>Api</code> and <code>Web</code> traits. As you can guess, the <code>Api</code> traitcontains just the REST API, and the <code>Web</code> trait exposes the APIs in a realHTTP server.</p>
+<p>I continue to strictly separate the layers of (even if so trivial) application; therefore, I will separate the REST API from the code that starts the HTTP server hosting the API. In keeping with the rest of the system, I will split the layers into traits, giving me the <code>Api</code> and <code>Web</code> traits. As you can guess, the <code>Api</code> trait contains just the REST API, and the <code>Web</code> trait exposes the APIs in a real HTTP server.</p>
 <p>To make the <code>Api</code> trait work with the rest of the system, I will use the self-type annotation and require that the <code>Api</code> trait is mixed in with <code>CoreActors</code> and <code>Core</code>. The <code>Web</code> trait will need to be mixed in with <code>Api</code>.</p>
 <code><pre>
 trait Api {
@@ -225,10 +225,10 @@ trait Api extends RouteConcatenation {
     "lastName":"Machacek",
     "email":"jan@eigengo.com" } }
 </pre></code>
-<p>I expect replies to match the responses (<code>Either[NotRegistered, Registered]</code>); the value on the left projection should result in HTTP status <em>bad request</em>; the value on the right projection should be HTTP OK. In our application, the value <code>Left(NotRegistered)</code> should be represented as HTTP status <code>400</code> with JSON payload<code>
+<p>I expect replies to match the responses (<code>Either[NotRegistered, Registered]</code>); the value on the left projection should result in HTTP status <em>bad request</em>; the value on the right projection should be HTTP OK. In our application, the value <code>Left(NotRegistered)</code> should be represented as HTTP status <code>400</code> with JSON payload <code>
 { "value": "NotRegistered" }
 </code></p>
-<p>The <code>Right(Registered)</code> should be represented as HTTP status <code>200</code> with JSON payload<code>
+<p>The <code>Right(Registered)</code> should be represented as HTTP status <code>200</code> with JSON payload <code>
 { "value": "Registered" }
 </code></p>
 <p>Before I begin to worry about the marshalling and unmarshalling, let's deal with the actual HTTP requests. <em>Spray-can</em> deals with the low-level I/O of asynchronous HTTP (and SPDY) server; it then turns the HTTP requests and responses into <code>HttpRequest</code> messages; the response sent to the sender is the <code>HttpResponse</code>, containing the response entity, headers, etc.</p>
@@ -251,7 +251,7 @@ class RegistrationService(registration: ActorRef)
 
 }
 </pre></code>
-<p>This is a good start. It clearly demonstrates the ease of Spray's routing. I say that on <em>path</em><code>register</code>, on HTTP method <em>POST</em>, I <em>complete</em> the request with body <code>"OK"</code>. Unfortunately, the string <code>"OK"</code> doesn't quite meet our requirement. To do so, I need to interpret the request as instance of <code>Register</code> and turn our <code>Either[NotRegistered.type, Registered.type]</code> into the response.</p>
+<p>This is a good start. It clearly demonstrates the ease of Spray's routing. I say that on <em>path</em> <code>register</code>, on HTTP method <em>POST</em>, I <em>complete</em> the request with body <code>"OK"</code>. Unfortunately, the string <code>"OK"</code> doesn't quite meet our requirement. To do so, I need to interpret the request as instance of <code>Register</code> and turn our <code>Either[NotRegistered.type, Registered.type]</code> into the response.</p>
 <p>All of this requires some marshalling jiggery pokery. Firstly, I need to be able to turn the HTTP requests into instances of our types and then I need to be able to do the reverse. Spray provides pluggable marshalling mechanism to do that. The instances of the typeclasses <code>Marshaller[A]</code> and <code>Unmarshaller[A]</code> are responsible for performing the <em>request entity</em> -&gt; <em>our instance</em> and <em>our instance</em> -&gt; <em>response entity</em> transformations.</p>
 <p>I will not get into a complex discussion of typeclasses; I will just say that typeclass defines behaviour for a certain type and a typeclass instance is the implementation of such behaviour. Spray includes the <code>spray-json</code> library, which, together with the <code>SprayJsonSupport</code> trait allows me to wire in <code>spray-json</code> marshallers and unmarshallers and use them in my Spray code.</p>
 <p>Without further delay, let me show you how it's done in code and then explore the details.</p>
@@ -284,7 +284,7 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
 }
 </pre></code>
 <p>Looking at the <code>route</code> definition, the only difference is that I changed <code>complete</code> to <code>handleWith</code>; and then wired in the call to our <code>RegistrationActor</code>.</p>
-<p>Reading the code intuitively, I say that to handle requests to <em>register</em> on HTTP method <em>post</em>, I turn the request into <code>Register</code> and then <em>handleWith</em> a function that returns a <code>Future[Either[...]]</code>, which weturn into a response.</p>
+<p>Reading the code intuitively, I say that to handle requests to <em>register</em> on HTTP method <em>post</em>, I turn the request into <code>Register</code> and then <em>handleWith</em> a function that returns a <code>Future[Either[...]]</code>, which we turn into a response.</p>
 <p>Intuition did not fail us. All I have to do is to implement the behaviour of turning the requests into our types and our types into responses. So, instances of typeclasses Those are the mysterious lines</p>
 <code><pre>
 implicit val userFormat = jsonFormat4(User)
@@ -292,8 +292,8 @@ implicit val registerFormat = jsonFormat1(Register)
 implicit val registeredFormat = jsonObjectFormat[Registered.type]
 implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
 </pre></code>
-<p>You see, their types are <code>RootJsonFormat[A]</code>, where <code>A</code> is <code>User</code>, <code>Register</code>, and so on. <code>RootJsonFormat[A]</code> contains functions that read JSON and write JSON; <code>SprayJsonSupport</code> then contains further typeclass instances that implement <code>Marshaller[A]</code> given <code>JsonWriter[A]</code>, and <code>Unmarshaller[A]</code> given<code>JsonReader[A]</code>. Moving on, I can create other interesting marshalling typeclasses.</p>
-<p>For example, if I know how to marshal some type <code>A</code>, I also know how to marshal <code>Seq[A]</code>, <code>Future[A]</code>; if I know how to marshal some <code>A</code> and <code>B</code>, I can marshal <code>Either[A, B]</code>, and so on. I am now ready to writea marshaller that marshals <code>Either[A, B]</code> and, for the left values, it also indicates the corret HTTP status code. Its signature is rather scary</p>
+<p>You see, their types are <code>RootJsonFormat[A]</code>, where <code>A</code> is <code>User</code>, <code>Register</code>, and so on. <code>RootJsonFormat[A]</code> contains functions that read JSON and write JSON; <code>SprayJsonSupport</code> then contains further typeclass instances that implement <code>Marshaller[A]</code> given <code>JsonWriter[A]</code>, and <code>Unmarshaller[A]</code> given <code>JsonReader[A]</code>. Moving on, I can create other interesting marshalling typeclasses.</p>
+<p>For example, if I know how to marshal some type <code>A</code>, I also know how to marshal <code>Seq[A]</code>, <code>Future[A]</code>; if I know how to marshal some <code>A</code> and <code>B</code>, I can marshal <code>Either[A, B]</code>, and so on. I am now ready to write a marshaller that marshals <code>Either[A, B]</code> and, for the left values, it also indicates the corret HTTP status code. Its signature is rather scary</p>
 <code><pre>
 type ErrorSelector[A] = A => StatusCode
 
@@ -313,7 +313,7 @@ implicit def errorSelectingEitherMarshaller[A, B]
   }
 </pre></code>
 <p>And breathe Now, I have a function <code>errorSelectingEitherMarshaller[A, B]</code> that returns <code>Marshalle[Either[A, B]]</code>. To be able to do that, it must know how to marshal <code>A</code> and <code>B</code>; and if I want to be able to indicate the status code, I must also be able to turn <code>A</code>s into <code>StatusCode</code>. That's what the three implicit parameters do I am asking the compiler to implicitly find an instance of <code>Marshaller[A]</code>, <code>Marshaller[B]</code> and <code>ErrorSelector[A]</code>; in other words, instances of the <code>Marshaller</code> and <code>ErrorSelector</code> typeclasses for instances <code>A</code> and <code>B</code>.</p>
-<p>To use, I must give the typeclass instance for <code>ErrorSelector[A]</code>, where <code>A</code> is <code>NotRegistered.type</code>;I do so by defining a singleton</p>
+<p>To use, I must give the typeclass instance for <code>ErrorSelector[A]</code>, where <code>A</code> is <code>NotRegistered.type</code>; I do so by defining a singleton</p>
 <code><pre>
 implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
   def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
@@ -335,10 +335,207 @@ trait Web {
 <p>I create the <code>Http</code> extension, pass it to Akka's <code>IO</code> machinery; and finally send it the <code>Http.Bind</code> message to bind the <code>rootService</code> to all interfaces, on port <code>8080</code>.</p>
 </div>
 <div>
-<h2>The grand finale</h2>
-<p>I am excited to present the final application that combines all our components in an HTTP server. It is<code>
+<h2>The Scala server</h2>
+<p>I am excited to present the final application that combines all our components in an HTTP server. It is <code>
 object Rest extends App with BootedCore with CoreActors with Api with Web
-</code>That's all there is to it. I have created an <code>App</code>, mixed in all required traits and we're good to go.</p>
+</code> That's all there is to it. I have created an <code>App</code>, mixed in all required traits and we're good to go.</p>
+</div>
+<div>
+<h2>AngularJS Upload</h2>
+<p>Let's not stop here, though. Today's users expect good client applications, too. Note that, as usual, the Akka code does nothing special with the uploaded files; it simply demonstrates that we can acccept <code>multipart/form-data</code>-encoded POST.</p>
+<p><img src="/upload.png" title="Screenshot"/></p>
+<p>This is our AngularJS application in the browser. We press the <em>Add files...</em> button to add (images) that will be uploaded. When the users click the <em>Start upload</em> button, we start the uploads in parallel, but each POST contains one file. The <em>Cancel upload</em> button clears the form.</p>
+</div>
+<div>
+<h2>Spray code</h2>
+<p>The requests are going to <code>register/image</code>, so we need to add the appropriate <em>handler</em> to the <code>RegistrationService</code> to handle POST to that path, to unmarshal the request as <code>MultipartFormData</code>. We then <code>complete</code> the request with the appropriate response.</p>
+<code><pre>
+class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
+  extends Directives with DefaultJsonFormats {
+
+  import akka.pattern.ask
+  import scala.concurrent.duration._
+  implicit val timeout = Timeout(2.seconds)
+
+  implicit val userFormat = jsonFormat4(User)
+  implicit val registerFormat = jsonFormat1(Register)
+  implicit val registeredFormat = jsonObjectFormat[Registered.type]
+  implicit val notRegisteredFormat = jsonObjectFormat[NotRegistered.type]
+
+  implicit object EitherErrorSelector extends ErrorSelector[NotRegistered.type] {
+    def apply(v: NotRegistered.type): StatusCode = StatusCodes.BadRequest
+  }
+
+  val route =
+    path("register") {
+      post {
+        handleWith { ru: Register => 
+          (registration ? ru).mapTo[
+            Either[NotRegistered.type, Registered.type]] 
+        }
+      }
+    } ~
+    path("register" / "image") {
+      post {
+        entity(as[MultipartFormData]) { data =>
+          complete {
+            data.fields.get("files[]") match {
+              case Some(imageEntity) =>
+                val size = imageEntity.entity.buffer.length
+                println(s"Uploaded $size")
+                "OK"
+              case None =>
+                println("No files")
+                "Not OK"
+            }
+          }
+        }
+      }
+    }
+
+}
+</pre></code>
+<p>This is the entire source code of the <code>RegistrationService</code> to show you where the new code fits in. The new bit is the usage of <code>entity(as[A]) { a => ... }</code>, which takes the posted <code>HttpEntity</code>, finds the instance of the <code>Unmarshaller</code> typeclass for the type <code>A</code>. When the unmarshalling succeeds, it applies the given function <code>{ a => ... }</code> to complete the request. In our case, we have</p>
+<code><pre>
+path("register" / "image") {
+  post {
+    entity(as[MultipartFormData]) { data =>
+      complete {
+        data.fields.get("files[]") match {
+          case Some(imageEntity) =>
+            val size = imageEntity.entity.buffer.length
+            println(s"Uploaded $size")
+            "OK"
+          case None =>
+            println("No files")
+            "Not OK"
+        }
+      }
+    }
+  }
+}
+</pre></code>
+<p>This means that on POST to <code>register/image</code>, we unmarshal the entity as <code>MultipartFormData</code> and apply the function</p>
+<code><pre>
+{ data =>
+  complete {
+    data.fields.get("files[]") match {
+      case Some(imageEntity) =>
+        val size = imageEntity.entity.buffer.length
+        println(s"Uploaded $size")
+        s"""{"size":$size}"""
+      case None =>
+        println("No files")
+        """{"size":0}"""
+    }
+  }
+}
+</pre></code>
+<p>To the successfully unmarshalled value. In that function, we <code>complete</code> the request by--ultimately--returning either <code>s"""{"size":$size}"""</code> or <code>"""{"size":0}"""</code>.</p>
+<p><img src="/hindenburg.png" title="Oh the humanity"/></p>
+</div>
+<div>
+<h2>Stringly-typed</h2>
+<p>Hand-constructing JSON, XML, ..., anyting really, is a <em>terrible idea</em>. Let's get rid of those <code>s"""{"size":$size}"""</code> and <code>"""{"size":0}"""</code> strings and replace them with a convenient case class.</p>
+<code><pre>
+case class ImageUploaded(size: Int)
+</pre></code>
+<p>We can easily define the <code>JsonWriter</code> typeclass instance for the <code>ImageUploaded</code> type by adding an implicit value of type <code>JsonWriter[ImageUploaded]</code>; and this is exactly what the <code>jsonFormat</code> functions do.</p>
+<code><pre>
+implicit val imageUploadedFormat = jsonFormat1(ImageUploaded)
+</pre></code>
+</div>
+<div>
+<h2>Out with Strings</h2>
+<p>So, we add the case class and the <code>JsonWriter[ImageUpload]</code> typeclass instance, which allows us to get rid of the <code>String</code>s in the <code>complete</code> function.</p>
+<code><pre>
+class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
+  extends Directives with DefaultJsonFormats {
+
+  case class ImageUploaded(size: Int)
+  implicit val imageUploadedFormat = jsonFormat1(ImageUploaded)
+
+  ...
+
+  val route =
+    ...
+    path("register" / "image") {
+      post {
+        entity(as[MultipartFormData]) { data =>
+          complete {
+            data.fields.get("files[]") match {
+              case Some(imageEntity) =>
+                val size = imageEntity.entity.buffer.length
+                println(s"Uploaded $size")
+                ImageUploaded(size)
+              case None =>
+                println("No files")
+                ImageUploaded(0)
+            }
+          }
+        }
+      }
+    }
+
+}
+</pre></code>
+<p>Now, this is better there are no <code>String</code>s and we handle the file uploads quite nicely. Unfortunately, there are still <em>too many notes</em>. Dissecting the <code>post</code> handler, we have</p>
+<code><pre>
+entity(as[MultipartFormData]) { data =>
+  complete {
+    ImageUploaded(...)
+  }
+}
+</pre></code>
+<p>The <code>entity(as[A]) { a: A => complete { ... } }</code> can be replaced with <code>handleWith</code> the same code we use in the <code>register</code> posts. And so, the final code is simply</p>
+<code><pre>
+path("register" / "image") {
+  post {
+    handleWith { data: MultipartFormData =>
+      data.fields.get("files[]") match {
+        case Some(imageEntity) =>
+          val size = imageEntity.entity.buffer.length
+          println(s"Uploaded $size")
+          ImageUploaded(size)
+        case None =>
+          println("No files")
+          ImageUploaded(0)
+      }
+    }
+  }
+}
+</pre></code>
+</div>
+<div>
+<h2>Running the AngularJS application</h2>
+<p>Now that we have the Spray application sorted out, let's tackle the JavaScript app. Its source is in <code>src/main/angular</code>. The main components are <code>index.html</code> and <code>js/app.js</code>. One cannot just open the <code>index.html</code> <em>file</em> in the browser. The other resources (JavaScripts, stylesheets) will not load properly, but even if they did, the browser would refuse to call our Spray server, because the locations do not match. Our Spray server runs on <code>http://localhost:8080</code>, but the AngularJS application's location would be <code>file:///.../index.html</code>.</p>
+<p>To allow us to test it, we need to (easily) serve the AngularJS application <em>as well as</em> our Spray application on the same location. In this post, I will only tackle the development setup, leaving me space to post about the <em>proper</em> AWS setup in the future.</p>
+</div>
+<div>
+<h2>Development setup</h2>
+<p>Let's use Apache to serve the AngularJS application at <code>http://localhost/~USER/angular</code> and let's host the Spray application (or, in fact, anything that listens on port <code>8080</code>) at <code>http://localhost/~USER/app</code>.</p>
+<p>To make this happen, we'll enable Apache's per-user home pages and we'll drop in <code>ProxyPass</code> and <code>ProxyPassReverse</code> directives. On my machine, the configuration for <code>$USER</code> lives in <code>/etc/apache2/users/$USER.conf</code>.</p>
+<code><pre>
+<Directory "/Users/$USER/Sites/">
+  Options Indexes Multiviews +FollowSymLinks
+  AllowOverride AuthConfig Limit
+  Order allow,deny
+  Allow from all
+</Directory>
+
+ProxyPass /~$USER/app/ http://localhost:8080/
+ProxyPassReverse /~$USER/app/ http://localhost:8080/
+</pre></code>
+<p>Of course, you cannot use <code>$USER</code>, you must replace it with your real username I don't really want to <em>copy</em> the <code>src/main/angular</code> directory to the <code>~/Sites</code> directory, so I've added the <code>+FollowSymLinks</code> directive and created a symbolic link in <code>~/Sites</code> to point to wherever I have <code>src/main/angular</code>. In my case, the listing of <code>~/Sites</code> is</p>
+<code><pre>
+~/Sites$ ls -la
+total 16
+lrwxr-xr-x  ... angular -> /.../akka-spray/src/main/angular
+-rw-r--r--  ... index.html
+</pre></code>
+<p>Now, after adding this file and starting (or restarting) Apache <code>sudo apachectl start</code> (or <code>sudo apachectl restart</code>), you are ready to see the app by going to <code>http://localhost/~USER/angular</code>.</p>
+<p>So, you are now ready to go opening <code>http://localhost/~USER/angular</code> shows the AngularJS application, where you can add as many files as you like, and clicking the <em>Start upload</em> button sends the files to the Spray application. The Spray application unceremoniously prints the file size I shall leave some interesting processing logic as exercise for the readers.</p>
+<p>As usual, the source code is at <a href="https://github.com/eigengo/activator-akka-spray" target="_blank">https//github.com/eigengo/activator-akka-spray</a>; feel free to report issues, or to send your contributions</p>
 </div>
 </body>
 </html>
