@@ -1,10 +1,7 @@
 package web
 
-import core.{CoreActors, Core}
-import api.{RoutedHttpService, Api}
-import akka.io.IO
-import spray.can.Http
-import akka.actor.{ActorSystem, Props}
+import api.Api
+import core.{Core, CoreActors}
 
 /**
  * Provides the web server (spray-can) for the REST api in ``Api``, using the actor system

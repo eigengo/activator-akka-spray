@@ -1,7 +1,6 @@
 package core
 
-import akka.actor.{Props, Actor}
-import java.util.UUID
+import akka.actor.Actor
 import core.FruitActor.FruitPojo
 
 object FruitActor {
@@ -11,9 +10,6 @@ object FruitActor {
 }
 
 class FruitActor extends Actor {
-  import MessengerActor._
-  import EmailActor._
-  import SMSActor._
 
 
   def receive: Receive = {
