@@ -1,7 +1,6 @@
 package web
 
-import api.Api
-import core.{Core, CoreActors}
+import api.{Api, Core, CoreActors}
 
 /**
  * Provides the web server (spray-can) for the REST api in ``Api``, using the actor system

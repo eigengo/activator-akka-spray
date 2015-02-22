@@ -5,8 +5,6 @@ import spray.http._
 import spray.routing._
 import spray.util.{ LoggingContext}
 import util.control.NonFatal
-import spray.httpx.marshalling.Marshaller
-import spray.http.HttpHeaders.RawHeader
 import akka.actor.{ActorLogging, Actor}
 
 /**

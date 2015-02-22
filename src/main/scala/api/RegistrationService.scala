@@ -1,15 +1,13 @@
 package api
 
-import spray.routing.Directives
-import scala.concurrent.ExecutionContext
 import akka.actor.ActorRef
-import core.{User, RegistrationActor}
 import akka.util.Timeout
-import RegistrationActor._
-import spray.http._
+import core.RegistrationActor.{Register, _}
 import core.User
-import core.RegistrationActor.Register
-import scala.Some
+import spray.http._
+import spray.routing.Directives
+
+import scala.concurrent.ExecutionContext
 
 class RegistrationService(registration: ActorRef)(implicit executionContext: ExecutionContext)
   extends Directives with DefaultJsonFormats {
@@ -17,6 +15,7 @@ class RegistrationService(registration: ActorRef)(implicit executionContext: Exe
   case class ImageUploaded(size: Long)
 
   import akka.pattern.ask
+
   import scala.concurrent.duration._
   implicit val timeout = Timeout(2.seconds)
 

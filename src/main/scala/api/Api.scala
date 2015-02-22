@@ -1,6 +1,5 @@
 package api
 
-import core.{Core, CoreActors}
 import spray.routing.HttpService
 
 import scala.concurrent.ExecutionContext.Implicits.global
