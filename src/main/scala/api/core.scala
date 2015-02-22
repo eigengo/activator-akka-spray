@@ -1,8 +1,8 @@
 package core
 
 import akka.actor.{Props, ActorRefFactory, ActorSystem}
-import api.{Api, RoutedHttpService}
 import akka.io.IO
+import api.{RoutedHttpService, Api}
 import spray.can.Http
 import web.StaticResources
 
