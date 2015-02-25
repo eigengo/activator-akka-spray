@@ -1,7 +1,6 @@
 package api
 
 import core.MessengerActor.SendMessage
-import core.MessengerActor
 import spray.routing.Directives
 import scala.concurrent.ExecutionContext
 import akka.actor.ActorRef

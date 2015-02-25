@@ -1,8 +1,8 @@
-package core
+package api
 
-import akka.actor.{Props, ActorRefFactory, ActorSystem}
-import api.{Api, RoutedHttpService}
+import akka.actor.{ActorRefFactory, ActorSystem, Props}
 import akka.io.IO
+import core.{FruitActor, MessengerActor, RegistrationActor}
 import spray.can.Http
 import web.StaticResources
 
@@ -48,6 +48,6 @@ trait CoreActors {
 
   val registration = system.actorOf(Props[RegistrationActor])
   val messenger    = system.actorOf(Props[MessengerActor])
-  val fruit = system.actorOf(Props[FruitActor])
+  val fruit        = system.actorOf(Props[FruitActor])
 
 }

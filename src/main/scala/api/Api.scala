@@ -1,10 +1,8 @@
 package api
 
-import core.{CoreActors, Core}
-import akka.actor.{ActorSystem, Props}
-import spray.routing.{HttpService, RouteConcatenation}
-import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
+import spray.routing.HttpService
+
+import scala.concurrent.ExecutionContext.Implicits.global
 /**
  * The REST API layer. It exposes the REST services, but does not provide any
  * web server interface.<br/>

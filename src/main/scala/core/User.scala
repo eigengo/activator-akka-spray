@@ -1,7 +1,6 @@
 package core
 
 import java.util.UUID
-import api.DefaultJsonFormats
 
 /**
  * A "typical" user value containing its identity, name and email.

@@ -1,11 +1,13 @@
 package api
 
-import spray.json._
 import java.util.UUID
-import scala.reflect.ClassTag
-import spray.httpx.marshalling.{MetaMarshallers, Marshaller, CollectingMarshallingContext}
+
 import spray.http.StatusCode
 import spray.httpx.SprayJsonSupport
+import spray.httpx.marshalling.{ToResponseMarshaller, Marshaller, MetaMarshallers}
+import spray.json._
+
+import scala.reflect.ClassTag
 
 /**
  * Contains useful JSON formats: ``j.u.Date``, ``j.u.UUID`` and others; it is useful
@@ -52,15 +54,13 @@ trait DefaultJsonFormats extends DefaultJsonProtocol with SprayJsonSupport with 
    * @tparam B the right projection
    * @return marshaller
    */
-  implicit def errorSelectingEitherMarshaller[A, B](implicit ma: Marshaller[A], mb: Marshaller[B], esa: ErrorSelector[A]): Marshaller[Either[A, B]] =
-    Marshaller[Either[A, B]] { (value, ctx) =>
+  implicit def errorSelectingEitherMarshaller[A, B](implicit ma: Marshaller[A], mb: Marshaller[B], esa: ErrorSelector[A]): ToResponseMarshaller[Either[A, B]] =
+    ToResponseMarshaller[Either[A, B]] { (value, ctx) =>
       value match {
         case Left(a) =>
-          val mc = new CollectingMarshallingContext()
-          ma(a, mc)
-          ctx.handleError(ErrorResponseException(esa(a), mc.entity))
+          ToResponseMarshaller.fromMarshaller(esa(a))(ma)(a, ctx)
         case Right(b) =>
-          mb(b, ctx)
+          ToResponseMarshaller.fromMarshaller()(mb)(b, ctx)
       }
     }
 
