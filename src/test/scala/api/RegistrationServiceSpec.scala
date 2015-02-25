@@ -3,7 +3,7 @@ package api
 import java.util.UUID
 
 import core.RegistrationActor._
-import core.{Core, CoreActors, User}
+import core.User
 import org.specs2.mutable.Specification
 import spray.http.{HttpResponse, StatusCodes}
 import spray.routing.Directives

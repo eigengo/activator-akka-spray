@@ -2,6 +2,7 @@ package core
 
 import akka.testkit.{ImplicitSender, TestKit}
 import akka.actor.ActorSystem
+import api.{Core, CoreActors}
 import org.specs2.mutable.SpecificationLike
 import java.util.UUID
 
