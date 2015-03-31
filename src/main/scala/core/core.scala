@@ -21,8 +21,8 @@ trait Core {
  * termination handler to stop the system when the JVM exits.
  */
 trait BootedCore extends Core with Api with StaticResources {
-  def system: ActorSystem = ActorSystem("activator-akka-spray")
-  def actorRefFactory: ActorRefFactory = system
+  lazy val system: ActorSystem = ActorSystem("activator-akka-spray")
+  lazy val actorRefFactory: ActorRefFactory = system
   val rootService = system.actorOf(Props(new RoutedHttpService(routes ~ staticResources )))
 
   IO(Http)(system) ! Http.Bind(rootService, "0.0.0.0", port = 8080)
